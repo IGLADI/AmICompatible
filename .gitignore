@@ -1,0 +1,5 @@
+/aic.conf
+*terraform.lock.hcl
+*.tfstate*
+*.terraform
+/temp

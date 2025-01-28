@@ -1,0 +1,9 @@
+[platform]
+platform = azure
+subscription_id = <subscription_id>
+appId = <appId>
+tenant_id = <tenant_id>
+client_secret = <client_secret>
+os = ["Ubuntu", "Debian"]
+region = westeurope
+vm_size = Standard_B1s
