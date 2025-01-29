@@ -1,9 +1,9 @@
 terraform {
-    required_providers {
-        azurerm = {
-        source = "hashicorp/azurerm"
-        }
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
     }
+  }
 }
 
 provider "azurerm" {
@@ -80,18 +80,18 @@ resource "azurerm_network_security_group" "main" {
 }
 
 resource "azurerm_network_interface_security_group_association" "main" {
-  network_interface_id     = azurerm_network_interface.main.id
+  network_interface_id      = azurerm_network_interface.main.id
   network_security_group_id = azurerm_network_security_group.main.id
 }
 
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "aic-vm"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  size                = var.vm_size
+  name                            = "aic-vm"
+  location                        = azurerm_resource_group.main.location
+  resource_group_name             = azurerm_resource_group.main.name
+  size                            = var.vm_size
   disable_password_authentication = true
 
-  admin_username      = "aic"
+  admin_username = "aic"
 
   admin_ssh_key {
     username   = "aic"
@@ -99,7 +99,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   }
 
   network_interface_ids = [
-    azurerm_network_interface.main.id 
+    azurerm_network_interface.main.id
   ]
 
   os_disk {
@@ -109,19 +109,19 @@ resource "azurerm_linux_virtual_machine" "main" {
 
   source_image_reference {
     publisher = lookup({
-      Ubuntu = "Canonical",
-      RHEL = "RedHat",
-      Debian = "Debian"
+      UbuntuServer_24_04-lts = "Canonical",
+      RHEL9                  = "RedHat",
+      Debian12               = "Debian"
     }, var.os)
     offer = lookup({
-      Ubuntu = "ubuntu-24_04-lts",
-      RHEL = "RHEL",
-      Debian = "debian-11"
+      UbuntuServer_24_04-lts = "ubuntu-24_04-lts",
+      RHEL9                  = "RHEL",
+      Debian12               = "debian-12"
     }, var.os)
     sku = lookup({
-      Ubuntu = "server",
-      RHEL = "8-lvm-gen2",
-      Debian = "11-backports-gen2"
+      UbuntuServer_24_04-lts = "server",
+      RHEL9                  = "90-gen2",
+      Debian12               = "12-gen2"
     }, var.os)
     version = "latest"
   }

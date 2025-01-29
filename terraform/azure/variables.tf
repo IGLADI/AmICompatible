@@ -1,31 +1,31 @@
 variable "subscription_id" {
-    type        = string
+  type = string
 }
 
 variable "region" {
-    type        = string
+  type = string
 }
 
 variable "vm_size" {
-    type        = string
+  type = string
 }
 
 variable "ssh_public_key_path" {
-    type        = string
+  type = string
 }
 
 variable "tenant_id" {
-    type        = string
+  type = string
 }
 
 variable "appId" {
-    type        = string
+  type = string
 }
 
 variable "client_secret" {
-    type        = string
+  type = string
 }
 
 variable "os" {
-    type    = string
+  type = string
 }
