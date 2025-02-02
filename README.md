@@ -5,41 +5,47 @@
 -   [Python 3.x](https://www.python.org/downloads/)
 -   [Terraform](https://www.terraform.io/downloads.html)
 -   [Azure Subscription](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account?icid=azurefreeaccount)
+-   [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+-   [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
-## Setup
+## Quick Start
 
-### Local Development
+1. **Clone Repository**
 
-1. Install dependencies:
+    ```bash
+    git clone https://github.com/IGLADI/AmICompatible && cd AmICompatible
+    ```
 
-```bash
-pip install -r requirements.txt
-```
+2. **Install dependencies**
 
-2. Create Azure Service Principal:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-```bash
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+3. **Create Azure Service Principal**
 
-az login
+    ```bash
+    az login
 
-az ad sp create-for-rbac --name "AIC" --role contributor --scopes /subscriptions/<subscription_id>
-```
+    az ad sp create-for-rbac --name "AIC" --role contributor --scopes /subscriptions/<subscription_id>
+    ```
 
-3. Configure credentials:
+4. **Edit the configuration file as needed**
 
-    - Copy `aic.conf.example` to `aic.conf`
-        ```bash
-        cp aic.conf.example aic.conf
-        ```
-    - Update the following values in `aic.conf`:
-        - subscription_id: Your Azure subscription ID
-        - tenant_id: From service principal output
-        - appId: From service principal output
-        - client_secret: From service principal output (password)
+    Copy `aic.yml.example` to `aic.yaml`:
 
-4. Run the application:
+    ```bash
+      cp aic.yml.example aic.yaml
+    ```
 
-```bash
-python main.py
-```
+    Update `aic.yaml`:
+
+    ```bash
+    nano aic.yaml
+    ```
+
+5. **Run AIC**
+
+    ```bash
+    python main.py
+    ```

@@ -1,0 +1,2 @@
+script-security
+pipeline-model-definition

@@ -1,0 +1,17 @@
+platform: azure
+subscription_id: <subscription_id>
+appId: <appId>
+tenant_id: <tenant_id>
+client_secret: <client_secret>
+os:
+    - UbuntuServer_24_04-LTS
+    - Debian12
+    - RHEL9
+region: westeurope
+vm_size: Standard_B1s
+project_root: ./example
+jenkins_file: ./Jenkinsfile
+# To get the list of plugins installed on your Jenkins server, run the following command: (and then based on this create your plugins.txt file)
+# JENKINS_HOST=user:pwd@<Jenkins server ip>:8080
+# curl -sSL "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=/*/*/shortName&wrapper=plugins" | perl -pe 's/.*?<shortName>([\w-]+).*?(<\/\w+>)+/\1\n/g'
+plugin_file: ./plugins.txt

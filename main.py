@@ -1,24 +1,32 @@
 from modules import config, ssh, vm
 import sys
+import os
 
 
 def main():
     try:
-        ssh.create_ssh_key()
-
         cfg = config.load_config()
         config.setup_terraform_vars(cfg)
 
-        if cfg["platform"] == "azure":
-            terraform_dir = "./terraform/azure"
-        else:
-            print(f"Error: Unsupported platform '{cfg['platform']}' specified.")
-            sys.exit(1)
+        os.makedirs("temp", exist_ok=True)
+        ssh.create_ssh_key()
 
-        for os_name in cfg["os_list"]:
-            vm.deploy_and_test_vm(terraform_dir, os_name)
+        # other providers can be added by creating new terraform directories
+        match cfg["platform"]:
+            case "azure":
+                terraform_dir = "./terraform/azure"
+            case _:
+                print(f"Error: Unsupported platform '{cfg['platform']}' specified.")
+                sys.exit(1)
+
+        for os_name in cfg["os"]:
+            try:
+                vm.deploy_and_test_vm(terraform_dir, os_name, cfg)
+                print(f"Deployment and test for {os_name} succeeded.")
+            except Exception as e:
+                print(f"Deployment and test for {os_name} failed: {e}")
     finally:
-        ssh.delete_ssh_key()
+        vm.cleanup()
 
 
 if __name__ == "__main__":

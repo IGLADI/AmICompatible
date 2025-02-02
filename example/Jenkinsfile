@@ -1,0 +1,23 @@
+// example simple jenkinsfile w help of ChatGPT
+pipeline {
+    agent any
+    
+    stages {
+        stage('Example') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'echo "Hostname: $(hostname)"'
+                        sh 'echo "Distro: $(cat /etc/*-release | grep PRETTY_NAME | cut -d "=" -f 2)"'
+                        sh 'echo "Architecture: $(uname -m)"'
+                        sh 'ufw --version'
+                    } else {
+                        bat 'echo Hostname: %COMPUTERNAME%'
+                        bat 'echo OS: %OS%'
+                        bat 'wmic os get Caption,Version,OSArchitecture'
+                    }
+                }
+            }
+        }
+    }
+}

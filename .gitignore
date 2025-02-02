@@ -1,6 +1,7 @@
-/aic.conf
+/aic.yml
 *terraform.lock.hcl
 *.tfstate*
 *.terraform
 /temp
 *.pyc
+settings.json

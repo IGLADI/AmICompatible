@@ -1,23 +1,10 @@
-import configparser
+import yaml
 import os
-import ast
 
 
 def load_config():
-    config = configparser.ConfigParser()
-    config.read("aic.conf")
-    platform_config = config["platform"]
-
-    return {
-        "platform": platform_config.get("platform"),
-        "os_list": ast.literal_eval(platform_config.get("os", "[]")),
-        "subscription_id": platform_config["subscription_id"],
-        "tenant_id": platform_config["tenant_id"],
-        "appId": platform_config["appId"],
-        "client_secret": platform_config["client_secret"],
-        "region": platform_config["region"],
-        "vm_size": platform_config["vm_size"],
-    }
+    with open("aic.yml") as config:
+        return yaml.safe_load(config)
 
 
 def setup_terraform_vars(config):

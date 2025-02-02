@@ -1,0 +1,93 @@
+# see https://www.jenkins.io/doc/book/installing/linux/
+# created with help of copilot
+---
+- name: Install Jenkinsfile Runner
+  hosts: all
+  become: true
+
+  tasks:
+      - name: Download Jenkins key (Debian/Ubuntu)
+        get_url:
+            url: "https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key"
+            dest: "/usr/share/keyrings/jenkins-keyring.asc"
+            mode: "0644"
+        when: ansible_facts['os_family'] == 'Debian'
+
+      - name: Add Jenkins apt repo (Debian/Ubuntu)
+        copy:
+            content: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+            dest: /etc/apt/sources.list.d/jenkins.list
+            mode: "0644"
+        when: ansible_facts['os_family'] == 'Debian'
+
+      - name: Add Jenkins repo (RHEL/Fedora)
+        get_url:
+            url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+            dest: /etc/yum.repos.d/jenkins.repo
+        when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Import Jenkins key (RHEL/Fedora)
+        rpm_key:
+            state: present
+            key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Update apt cache (Debian/Ubuntu)
+        apt:
+            update_cache: yes
+        when: ansible_facts['os_family'] == 'Debian'
+
+      - name: Update dnf cache (RHEL/Fedora)
+        dnf:
+            update_cache: yes
+        when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Install Java (Debian/Ubuntu)
+        apt:
+            name:
+                - openjdk-17-jre
+                - openjdk-17-jdk
+            state: present
+        when: ansible_facts['os_family'] == "Debian"
+
+      - name: Install Java (RHEL/Fedora)
+        dnf:
+            name:
+                - java-17-openjdk
+                - java-17-openjdk-devel
+            state: present
+        when: ansible_facts['os_family'] == "RedHat"
+
+      - name: Install Jenkins (Debian/Ubuntu)
+        apt:
+            name: jenkins
+            state: present
+        when: ansible_facts['os_family'] == 'Debian'
+
+      - name: Install Jenkins (RHEL/Fedora)
+        dnf:
+            name: jenkins
+            state: present
+        when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Reload systemd daemon (RHEL/Fedora)
+        systemd:
+            daemon_reload: yes
+        when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Start Jenkins service
+        systemd:
+            name: jenkins
+            state: started
+            enabled: yes
+
+      - name: Download Jenkins CLI
+        get_url:
+            url: "http://localhost:8080/jnlpJars/jenkins-cli.jar"
+            dest: "/home/aic/jenkins-cli.jar"
+            mode: "0755"
+
+      - name: Ensure Jenkins CLI tool is executable
+        file:
+            path: "/home/aic/jenkins-cli.jar"
+            mode: "0755"

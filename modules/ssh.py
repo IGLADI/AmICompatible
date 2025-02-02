@@ -6,30 +6,43 @@ import time
 
 # Create single use ssh key
 def create_ssh_key():
-    # remove any previous key if it exists
+    # remove any previous key
     if os.path.exists("temp/id_rsa"):
-        delete_ssh_key()
-    os.makedirs("temp", exist_ok=True)
+        os.remove("temp/id_rsa")
+        os.remove("temp/id_rsa.pub")
     subprocess.run("ssh-keygen -t rsa -b 4096 -f ./temp/id_rsa -N '' -q", shell=True, check=True)
 
 
-def delete_ssh_key():
-    os.remove("temp/id_rsa")
-    os.remove("temp/id_rsa.pub")
-    os.rmdir("temp")
-
-
 # try connecting to the VM (needed in case the vm takes time to boot)
-def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 30):
-    for attempt in range(max_retries):
+def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 10):
+    for attempt in range(1, max_retries):
         try:
             ssh = paramiko.SSHClient()
+            # automatically add the hostname to the list of known hosts
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=ip, username="aic", key_filename="./temp/id_rsa", timeout=30)
+            ssh.connect(hostname=ip, username="aic", key_filename="./temp/id_rsa", timeout=10)
             return ssh
         except Exception as e:
-            if attempt == max_retries - 1:
+            if attempt == max_retries:
                 raise Exception(f"Failed to connect after {max_retries} attempts: {str(e)}")
-            print(f"Connection attempt {attempt + 1} failed, waiting {delay} seconds...")
-            time.sleep(delay)
-    return None
+            else:
+                print(f"Connection attempt {attempt} failed, waiting {delay} seconds...")
+                time.sleep(delay)
+
+
+def execute_ssh_command(client, command: str, print_output: bool = True):
+    stdin, stdout, stderr = client.exec_command(command)
+    stdout_str = stdout.read().decode().strip()
+    stderr_str = stderr.read().decode().strip()
+    exit_status = stdout.channel.recv_exit_status()
+
+    if print_output:
+        if stdout_str:
+            print("STDOUT:", stdout_str)
+        if stderr_str:
+            print("STDERR:", stderr_str)
+
+    if exit_status != 0:
+        raise Exception(f"Command '{command}' failed with exit status {exit_status}")
+
+    return stdout_str, stderr_str
