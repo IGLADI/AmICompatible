@@ -32,18 +32,12 @@
             key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
         when: ansible_facts['os_family'] == 'RedHat'
 
-      - name: Update apt cache (Debian/Ubuntu)
-        apt:
+      - name: Update cache
+        package:
             update_cache: yes
-        when: ansible_facts['os_family'] == 'Debian'
-
-      - name: Update dnf cache (RHEL/Fedora)
-        dnf:
-            update_cache: yes
-        when: ansible_facts['os_family'] == 'RedHat'
 
       - name: Install Java (Debian/Ubuntu)
-        apt:
+        package:
             name:
                 - openjdk-17-jre
                 - openjdk-17-jdk
@@ -51,24 +45,17 @@
         when: ansible_facts['os_family'] == "Debian"
 
       - name: Install Java (RHEL/Fedora)
-        dnf:
+        package:
             name:
                 - java-17-openjdk
                 - java-17-openjdk-devel
             state: present
         when: ansible_facts['os_family'] == "RedHat"
 
-      - name: Install Jenkins (Debian/Ubuntu)
-        apt:
+      - name: Install Jenkins
+        package:
             name: jenkins
             state: present
-        when: ansible_facts['os_family'] == 'Debian'
-
-      - name: Install Jenkins (RHEL/Fedora)
-        dnf:
-            name: jenkins
-            state: present
-        when: ansible_facts['os_family'] == 'RedHat'
 
       - name: Reload systemd daemon (RHEL/Fedora)
         systemd:
