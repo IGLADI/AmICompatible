@@ -35,7 +35,7 @@
     Copy `aic.yml.example` to `aic.yaml`:
 
     ```bash
-      cp aic.yml.example aic.yaml
+    cp aic.yml.example aic.yaml
     ```
 
     Update `aic.yaml`:
@@ -45,6 +45,8 @@
     ```
 
 5. **Run AIC**
+
+    This would typically be done using github actions or similar (which would also handle the secrets in `aic.yml`).
 
     ```bash
     python main.py

@@ -1,7 +1,7 @@
 # see https://www.jenkins.io/doc/book/installing/linux/
 # created with help of copilot
 ---
-- name: Install Jenkinsfile Runner
+- name: Install Jenkins
   hosts: all
   become: true
 

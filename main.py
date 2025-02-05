@@ -1,6 +1,7 @@
 from modules import config, ssh, vm
 import sys
 import os
+import secrets
 
 
 def main():
@@ -21,7 +22,19 @@ def main():
 
         for os_name in cfg["os"]:
             try:
-                vm.deploy_and_test_vm(terraform_dir, os_name, cfg)
+                if "windows" in os_name.lower():
+                    # for windows we ssh via a password as a windows vm requires to specify a password either way
+                    while True:
+                        password = secrets.token_urlsafe(32)
+                        # check if it fulfills the azure password requirements (made with help of copilot)
+                        if any(c.islower() for c in password) and any(c.isupper() for c in password) and any(c.isdigit() for c in password):
+                            break
+                        else:
+                            print("Password does not meet Azure requirements, generating a new one...")
+                    os.environ["TF_VAR_password"] = password
+                    vm.deploy_and_test_vm(f"{terraform_dir}/windows", os_name, cfg, password, windows=True)
+                else:
+                    vm.deploy_and_test_vm(f"{terraform_dir}/linux", os_name, cfg)
                 print(f"Deployment and test for {os_name} succeeded.")
             except Exception as e:
                 print(f"Deployment and test for {os_name} failed: {e}")

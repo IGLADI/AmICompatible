@@ -4,10 +4,28 @@ import os
 
 
 # create all needed cloud resources
-def init_and_apply(terraform_dir: str, os_name: str):
+def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 5):
     os.environ["TF_VAR_os"] = os_name
     subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True)
-    subprocess.run("terraform apply -auto-approve", shell=True, cwd=terraform_dir, check=True)
+
+    for retry in range(max_retries):
+        try:
+            subprocess.run("terraform apply -auto-approve", shell=True, cwd=terraform_dir, check=True)
+            break
+        except subprocess.CalledProcessError as e:
+            print(f"Terraform apply failed: {e}")
+            # seems like the timout is ~3min
+            # this should not be an issue when using a non free vm but the free tier vms (which do not comply w windows minimum requirement at all) are so slow it can easily take this long just to install ssh
+            print("This is likely windows vm taking too long to install ssh which causes azure to timeout")
+            print("To prevent this further increase the vm size when using windows")
+            # this is needed as if it timouts terraform does not know what has been made as azure can still actually install ssh and this will create conflict
+            print("Destroying resources and retrying")
+            destroy(terraform_dir)
+            if retry == max_retries - 1:
+                raise Exception("Max retries reached. Terraform apply failed.")
+            else:
+                print(f"Retrying... Attempt {retry + 1}")
+                continue
 
 
 def get_public_ip(terraform_dir: str):

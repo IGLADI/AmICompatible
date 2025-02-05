@@ -16,6 +16,7 @@ provider "azurerm" {
 }
 
 # this is to prevent azure to auto create a separate NetworkWatcherRG which would not be known (and deleted) by terraform
+# somimes azure still creates a NetworkWatcherRG, but empty which is fine
 resource "azurerm_network_watcher" "main" {
   name                = "aic-vm-nw"
   location            = var.region

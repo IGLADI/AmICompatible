@@ -1,0 +1,15 @@
+---
+- name: Install Jenkins
+  hosts: all
+  gather_facts: false
+
+  tasks:
+      # temporary exemple to show we have ssh
+      # TODO actually install Jenkins
+      - name: List files in the current directory
+        win_shell: "ls"
+        register: files
+
+      - name: Print the list of files
+        debug:
+            var: files.stdout_lines

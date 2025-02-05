@@ -13,17 +13,20 @@ def create_ssh_key():
     subprocess.run("ssh-keygen -t rsa -b 4096 -f ./temp/id_rsa -N '' -q", shell=True, check=True)
 
 
-# try connecting to the VM (needed in case the vm takes time to boot)
-def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 10):
-    for attempt in range(1, max_retries):
+def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 10, password=None, key_path="./temp/id_rsa"):
+    # try connecting to the VM (needed in case the vm takes time to boot)
+    for attempt in range(1, max_retries + 1):
         try:
             ssh = paramiko.SSHClient()
             # automatically add the hostname to the list of known hosts
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=ip, username="aic", key_filename="./temp/id_rsa", timeout=10)
+            if password:
+                ssh.connect(hostname=ip, username="aic", password=password, timeout=10)
+            else:
+                ssh.connect(hostname=ip, username="aic", key_filename=key_path, timeout=10)
             return ssh
         except Exception as e:
-            if attempt == max_retries:
+            if attempt >= max_retries:
                 raise Exception(f"Failed to connect after {max_retries} attempts: {str(e)}")
             else:
                 print(f"Connection attempt {attempt} failed, waiting {delay} seconds...")

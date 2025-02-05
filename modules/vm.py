@@ -6,7 +6,7 @@ import time
 import shlex
 
 
-def deploy_and_test_vm(terraform_dir, os_name, cfg):
+def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False):
     print(f"Deploying {os_name} VM")
     terraform.init_and_apply(terraform_dir, os_name)
 
@@ -15,14 +15,21 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg):
         ip = terraform.get_public_ip(terraform_dir)
 
         print("Connecting to the VM via SSH...")
-        client = ssh.connect_to_vm(ip)
+        # for windows this only serves to wait for ssh to be available
+        client = ssh.connect_to_vm(ip, password=password)
 
         print("Creating Ansible inventory...")
-        create_ansible_inventory(ip)
+        create_ansible_inventory(ip, password, windows=windows)
 
         print("Downloading remote dependencies...")
-        download_remote_dependency()
+        download_remote_dependency(password, windows, ip)
 
+        if password:
+            print("Recreating the ssh connection with powershell as shell...")
+            client.close()
+            client = ssh.connect_to_vm(ip, password=password)
+
+        # TODO windows from here on
         print("Copying project files...")
         copy_project_files(ip, cfg["project_root"])
 
@@ -30,18 +37,45 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg):
         run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"])
     finally:
         print("Cleaning up...")
-        client.close()
         terraform.destroy(terraform_dir)
+        if client:
+            client.close()
 
 
-def create_ansible_inventory(ip):
-    inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+def create_ansible_inventory(ip, password=None, powershell=False, windows=False):
+    if password and windows:
+        if powershell:
+            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Users\\aic' ansible_shell_type=powershell ansible_python_interpreter=none"
+        else:
+            # ansible ssh via cmd and then run powershell
+            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Users\\aic' ansible_shell_type=cmd ansible_shell_executable=powershell.exe ansible_python_interpreter=none"
+    elif not windows:
+        inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
+    else:
+        raise ValueError("This combination of arguments is not supported")
     with open("./temp/inventory.ini", "w") as ini:
         ini.write(inventory)
 
 
-def download_remote_dependency():
-    subprocess.run("ansible-playbook -i ./temp/inventory.ini ansible/dependency.yml", shell=True, check=True)
+def download_remote_dependency(password=None, windows=False, ip=None):
+    if password and windows:
+        # set pwsh as default shell
+        subprocess.run(
+            f"ansible-playbook -i ./temp/inventory.ini ansible/windows/shell.yml --extra-vars 'ansible_password={password}'",
+            shell=True,
+            check=True,
+        )
+        # install dependencies
+        create_ansible_inventory(ip, password, powershell=True, windows=windows)
+        subprocess.run(
+            f"ansible-playbook -i ./temp/inventory.ini ansible/windows/dependency.yml --extra-vars 'ansible_password={password}'",
+            shell=True,
+            check=True,
+        )
+    elif not windows:
+        subprocess.run("ansible-playbook -i ./temp/inventory.ini ansible/linux/dependency.yml", shell=True, check=True)
+    else:
+        raise ValueError("This combination of arguments is not supported")
 
 
 def copy_project_files(ip, project_root):

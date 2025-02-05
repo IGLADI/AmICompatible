@@ -15,6 +15,6 @@ def setup_terraform_vars(config):
         "TF_VAR_client_secret": config["client_secret"],
         "TF_VAR_region": config["region"],
         "TF_VAR_vm_size": config["vm_size"],
-        "TF_VAR_ssh_public_key_path": "../../temp/id_rsa.pub",
+        "TF_VAR_ssh_public_key_path": "../../../temp/id_rsa.pub",
     }
     os.environ.update(env_vars)
