@@ -10,6 +10,7 @@ pipeline {
                         sh 'echo "Hostname: $(hostname)"'
                         sh 'echo "Distro: $(cat /etc/*-release | grep PRETTY_NAME | cut -d "=" -f 2)"'
                         sh 'echo "Architecture: $(uname -m)"'
+                        sh 'cat plugins.txt'
                         sh 'ufw --version'
                     } else {
                         bat 'echo Hostname: %COMPUTERNAME%'

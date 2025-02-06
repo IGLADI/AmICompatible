@@ -30,7 +30,7 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False
             client = ssh.connect_to_vm(ip, password=password)
 
         print("Copying project files...")
-        copy_project_files(ip, cfg["project_root"], password, windows)
+        copy_project_files(client, ip, cfg["project_root"], password, windows)
 
         # TODO windows from here on
         print("Running Jenkins pipeline...")
@@ -78,7 +78,7 @@ def download_remote_dependency(password=None, windows=False, ip=None):
         raise ValueError("This combination of arguments is not supported")
 
 
-def copy_project_files(ip, project_root, password=None, windows=False):
+def copy_project_files(client, ip, project_root, password=None, windows=False):
     if password and windows:
         # scp does not support password auth OOTB so we use sshpass to automate the password input
         # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
@@ -86,7 +86,13 @@ def copy_project_files(ip, project_root, password=None, windows=False):
         subprocess.run(f"sshpass -p {password} scp -r {project_root} aic@{ip}:/C:/Users/aic", shell=True, check=True)
         subprocess.run(f"sshpass -p {password} scp ./modules/approve-scripts.groovy aic@{ip}:/C:/Users/aic", shell=True, check=True)
     elif not windows:
+        # create the default folder jenkins would use so we can place the project files there (else the user would have to edit his Jenkinsfile w the workspace path)
+        ssh.execute_ssh_command(client, "sudo mkdir -p /var/lib/jenkins/workspace/test_job")
+        # copy the project files to the VM
         subprocess.run(f"scp -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", shell=True, check=True)
+        ssh.execute_ssh_command(client, "sudo cp ~/project/* /var/lib/jenkins/workspace/test_job")
+        # regive jenkins ownership of the workspace
+        ssh.execute_ssh_command(client, "sudo chown -R jenkins:jenkins /var/lib/jenkins")
         subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
     else:
         raise ValueError("This combination of arguments is not supported")
@@ -148,7 +154,8 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
     )
     print("Triggering Jenkins job...")
     ssh.execute_ssh_command(
-        client, f"cd project && java -jar ~/jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 build test_job -f -v"
+        client,
+        f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 build test_job -f -v",
     )
 
 
