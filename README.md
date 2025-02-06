@@ -32,7 +32,7 @@
 
 4. **Edit the configuration file as needed**
 
-    Copy `aic.yml.example` to `aic.yaml`:
+    Copy `aic.yml.example` to `aic.yml`:
 
     ```bash
     cp aic.yml.example aic.yaml

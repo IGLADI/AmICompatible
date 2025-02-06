@@ -24,15 +24,15 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False
         print("Downloading remote dependencies...")
         download_remote_dependency(password, windows, ip)
 
-        if password:
+        if windows:
             print("Recreating the ssh connection with powershell as shell...")
             client.close()
             client = ssh.connect_to_vm(ip, password=password)
 
-        # TODO windows from here on
         print("Copying project files...")
-        copy_project_files(ip, cfg["project_root"])
+        copy_project_files(ip, cfg["project_root"], password, windows)
 
+        # TODO windows from here on
         print("Running Jenkins pipeline...")
         run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"])
     finally:
@@ -45,10 +45,10 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False
 def create_ansible_inventory(ip, password=None, powershell=False, windows=False):
     if password and windows:
         if powershell:
-            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Users\\aic' ansible_shell_type=powershell ansible_python_interpreter=none"
+            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=powershell ansible_python_interpreter=none"
         else:
             # ansible ssh via cmd and then run powershell
-            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Users\\aic' ansible_shell_type=cmd ansible_shell_executable=powershell.exe ansible_python_interpreter=none"
+            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=cmd ansible_shell_executable=powershell.exe ansible_python_interpreter=none"
     elif not windows:
         inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
     else:
@@ -78,14 +78,23 @@ def download_remote_dependency(password=None, windows=False, ip=None):
         raise ValueError("This combination of arguments is not supported")
 
 
-def copy_project_files(ip, project_root):
-    project_path = os.path.abspath(project_root)
-    subprocess.run(f"scp -i ./temp/id_rsa -r {project_path} aic@{ip}:~/project", shell=True, check=True)
-    subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
+def copy_project_files(ip, project_root, password=None, windows=False):
+    if password and windows:
+        # scp does not support password auth OOTB so we use sshpass to automate the password input
+        # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
+        # TODO check jenkins job workspace path in windows
+        subprocess.run(f"sshpass -p {password} scp -r {project_root} aic@{ip}:/C:/Users/aic", shell=True, check=True)
+        subprocess.run(f"sshpass -p {password} scp ./modules/approve-scripts.groovy aic@{ip}:/C:/Users/aic", shell=True, check=True)
+    elif not windows:
+        subprocess.run(f"scp -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", shell=True, check=True)
+        subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
+    else:
+        raise ValueError("This combination of arguments is not supported")
 
 
 def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
     print("Getting Jenkins initial admin password...")
+    # stderr has to be there even if we don't use it else stdout will contain a tuple
     stdout, stderr = ssh.execute_ssh_command(client, "sudo cat /var/lib/jenkins/secrets/initialAdminPassword", print_output=False)
     admin_password = stdout.strip()
 
