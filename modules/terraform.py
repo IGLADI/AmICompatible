@@ -17,7 +17,7 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 5):
             # seems like the timout is ~3min
             # this should not be an issue when using a non free vm but the free tier vms (which do not comply w windows minimum requirement at all) are so slow it can easily take this long just to install ssh
             print("This is likely windows vm taking too long to install ssh which causes azure to timeout")
-            print("To prevent this further increase the vm size when using windows")
+            print("To prevent this in the future increase the vm size when using windows")
             # this is needed as if it timouts terraform does not know what has been made as azure can still actually install ssh and this will create conflict
             print("Destroying resources and retrying")
             destroy(terraform_dir)

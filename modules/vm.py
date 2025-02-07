@@ -4,6 +4,7 @@ import os
 import shutil
 import time
 import shlex
+import secrets
 
 
 def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False):
@@ -48,7 +49,7 @@ def create_ansible_inventory(ip, password=None, powershell=False, windows=False)
             inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=powershell ansible_python_interpreter=none"
         else:
             # ansible ssh via cmd and then run powershell
-            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=cmd ansible_shell_executable=powershell.exe ansible_python_interpreter=none"
+            inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=cmd ansible_python_interpreter=none"
     elif not windows:
         inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
     else:
@@ -73,6 +74,7 @@ def download_remote_dependency(password=None, windows=False, ip=None):
             check=True,
         )
     elif not windows:
+        # rsa path is in the ini file
         subprocess.run("ansible-playbook -i ./temp/inventory.ini ansible/linux/dependency.yml", shell=True, check=True)
     else:
         raise ValueError("This combination of arguments is not supported")
@@ -148,6 +150,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
         client,
         f"java -jar jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 create-job test_job < ~/job_config.xml",
     )
+    # we need to approve the job as it's not sandboxed, see groovy script for source
     print("Approving Jenkins job...")
     ssh.execute_ssh_command(
         client, f"java -jar jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080  groovy = < approve-scripts.groovy"
@@ -162,3 +165,13 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
 def cleanup():
     if os.path.exists("temp"):
         shutil.rmtree("temp")
+
+
+def generate_password():
+    while True:
+        password = secrets.token_urlsafe(32)
+        # check if it fulfills the azure password requirements (made with help of copilot)
+        if any(c.islower() for c in password) and any(c.isupper() for c in password) and any(c.isdigit() for c in password):
+            return password
+        else:
+            print("Password does not meet Azure requirements, generating a new one...")
