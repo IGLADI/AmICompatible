@@ -1,6 +1,6 @@
 # see https://docs.ansible.com/ansible/latest/os_guide/windows_ssh.html#:~:text=The%20new%20default%20shell%20setting%20will%20apply%20to%20the%20next%20SSH%20connection%2C%20there%20is%20no%20need%20to%20restart%20the%20sshd%20service.%20You%20can%20also%20use%20Ansible%20to%20configure%20the%20default%20shell%3A
 ---
-- name: Install Jenkinsfile Runner
+- name: Set the default shell to PowerShell
   hosts: all
   gather_facts: false
 

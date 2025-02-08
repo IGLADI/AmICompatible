@@ -62,14 +62,14 @@ def download_remote_dependency(password=None, windows=False, ip=None):
     if password and windows:
         # set pwsh as default shell
         subprocess.run(
-            f"ansible-playbook -i ./temp/inventory.ini ansible/windows/shell.yml --extra-vars 'ansible_password={password}'",
+            "ansible-playbook -i ./temp/inventory.ini ansible/windows/shell.yml",
             shell=True,
             check=True,
         )
         # install dependencies
         create_ansible_inventory(ip, password, powershell=True, windows=windows)
         subprocess.run(
-            f"ansible-playbook -i ./temp/inventory.ini ansible/windows/dependency.yml --extra-vars 'ansible_password={password}'",
+            "ansible-playbook -i ./temp/inventory.ini ansible/windows/dependency.yml",
             shell=True,
             check=True,
         )

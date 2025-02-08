@@ -1,15 +1,35 @@
+# see https://www.jenkins.io/doc/book/installing/windows/
+# https://www.jenkins.io/download/#downloading-jenkins
+# https://www.oracle.com/be/java/technologies/downloads/#jdk21-windows
+# w help of deepseek
+
 ---
 - name: Install Jenkins
   hosts: all
   gather_facts: false
 
   tasks:
-      # temporary exemple to show we have ssh
-      # TODO actually install Jenkins
-      - name: List files in the current directory
-        win_shell: "ls"
-        register: files
+      # Just in case ensure a unified download dir exists
+      - name: Ensure Downloads directory
+        ansible.builtin.win_file:
+            path: 'C:\Users\aic\Downloads'
+            state: directory
 
-      - name: Print the list of files
-        debug:
-            var: files.stdout_lines
+      - name: Download Java MSI
+        win_uri:
+            url: "https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.msi"
+            dest: "C:\\Users\\aic\\Downloads\\jdk-21_windows-x64_bin"
+            method: GET
+
+      - name: Install Java
+        ansible.builtin.win_command: 'msiexec.exe /i "C:\Users\aic\Downloads\jdk-21_windows-x64_bin" /qn /norestart'
+
+      - name: Download Jenkins MSI
+        win_uri:
+            url: "https://get.jenkins.io/windows-stable/2.492.1/jenkins.msi"
+            dest: "C:\\Users\\aic\\Downloads\\jenkins.msi"
+            method: GET
+
+      - name: Install Jenkins
+        # jenkins does not auto find java on some windows machines so we parse the default java path
+        ansible.builtin.win_command: 'msiexec.exe /i "C:\Users\aic\Downloads\jenkins.msi" /qn /norestart JAVA_HOME="C:\Program Files\Java\jdk-21"'
