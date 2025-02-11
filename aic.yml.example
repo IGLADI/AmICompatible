@@ -9,6 +9,7 @@ tenant_id: <tenant_id>
 client_secret: <client_secret>
 os:
     - MicrosoftWindowsServer-2022-datacenter
+    - Windows11
     - UbuntuServer_24_04-LTS
     - Debian12
     - RHEL9

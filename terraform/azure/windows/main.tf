@@ -31,16 +31,13 @@ resource "azurerm_network_watcher" "main" {
 }
 
 resource "azurerm_windows_virtual_machine" "main" {
-  admin_password      = var.password
-  admin_username      = "aic"
-  hotpatching_enabled = true
-  location            = var.region
-  name                = "win"
+  admin_password = var.password
+  admin_username = "aic"
+  location       = var.region
+  name           = "aic-vm"
   network_interface_ids = [
     azurerm_network_interface.main.id,
   ]
-  patch_mode          = "AutomaticByPlatform"
-  reboot_setting      = "IfRequired"
   resource_group_name = "aic-vm-rg"
   secure_boot_enabled = true
   size                = var.vm_size
@@ -59,12 +56,15 @@ resource "azurerm_windows_virtual_machine" "main" {
   source_image_reference {
     publisher = lookup({
       MicrosoftWindowsServer-2022-datacenter = "MicrosoftWindowsServer"
+      Windows11                              = "microsoftwindowsdesktop"
     }, var.os)
     offer = lookup({
       MicrosoftWindowsServer-2022-datacenter = "WindowsServer"
+      Windows11                              = "windows-11"
     }, var.os)
     sku = lookup({
-      MicrosoftWindowsServer-2022-datacenter = "2022-datacenter-azure-edition-hotpatch"
+      MicrosoftWindowsServer-2022-datacenter = "2022-datacenter-azure-edition"
+      Windows11                              = "win11-22h2-entn"
     }, var.os)
     version = "latest"
   }

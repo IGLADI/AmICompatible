@@ -137,8 +137,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
     # Escape the job config for the shell
     if windows:
         # pwsh escape done w help of chatGPT
-        ssh.execute_ssh_command(client, f'@"\n{job_config}\n"@ | Out-File -Encoding UTF8 job_config.xml')
-        ssh.execute_ssh_command(client, "type job_config.xml")
+        ssh.execute_ssh_command(client, f"@'\n{job_config}\n'@ | Out-File -Encoding UTF8 job_config.xml")
     else:
         job_config = shlex.quote(job_config)
         ssh.execute_ssh_command(client, f"echo {job_config} > job_config.xml")

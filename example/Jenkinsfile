@@ -14,7 +14,6 @@ pipeline {
                         sh 'ufw --version'
                     } else {
                         bat 'echo Hostname: %COMPUTERNAME%'
-                        bat 'echo OS: %OS%'
                         bat 'wmic os get Caption,Version,OSArchitecture'
                     }
                 }
