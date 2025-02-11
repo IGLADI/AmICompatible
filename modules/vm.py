@@ -33,9 +33,8 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False
         print("Copying project files...")
         copy_project_files(client, ip, cfg["project_root"], password, windows)
 
-        # TODO windows from here on
         print("Running Jenkins pipeline...")
-        run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"])
+        run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], password, windows)
     finally:
         print("Cleaning up...")
         terraform.destroy(terraform_dir)
@@ -100,33 +99,29 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
         raise ValueError("This combination of arguments is not supported")
 
 
-def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
+def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, password=None, windows=False):
     print("Getting Jenkins initial admin password...")
     # stderr has to be there even if we don't use it else stdout will contain a tuple
-    stdout, stderr = ssh.execute_ssh_command(client, "sudo cat /var/lib/jenkins/secrets/initialAdminPassword", print_output=False)
-    admin_password = stdout.strip()
+    if windows:
+        # some windows version will store this in a different path or even multiple times, command to find the file and then get the content w help of chatGPT
+        stdout, stderr = ssh.execute_ssh_command(
+            client,
+            'Get-Content -Path (Get-ChildItem -Path "C:\\" -Recurse -Filter "initialAdminPassword" -ErrorAction SilentlyContinue -Force -File -OutVariable files | Select-Object -First 1 -ExpandProperty FullName)',
+            print_output=False,
+        )
+    else:
+        stdout, stderr = ssh.execute_ssh_command(client, "sudo cat /var/lib/jenkins/secrets/initialAdminPassword", print_output=False)
 
-    # Install Jenkins plugins
-    if os.path.exists(os.path.join(project_root, plugin_file)):
-        print("Installing Jenkins plugins...")
-        with open(os.path.join(project_root, plugin_file), "r") as file:
-            plugins = [line.strip() for line in file if line.strip()]
+    jenkins_password = stdout.strip()
 
-        if plugins:
-            plugins_str = " ".join(plugins)
-            ssh.execute_ssh_command(
-                client, f"java -jar jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 install-plugin {plugins_str} -deploy"
-            )
-            # Restart Jenkins to apply plugin changes
-            ssh.execute_ssh_command(client, "sudo systemctl restart jenkins")
-            # Wait for Jenkins to come back up
-            time.sleep(30)
+    install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows)
 
     print("Creating Jenkins job...")
     with open(os.path.join(project_root, jenkins_file), "r") as file:
         jenkins_file_content = file.read()
 
     # This xml is based from a pipline made trough the Jenkins UI (exported by adding /config.xml to the job URL)
+    # could also be done in a separate file and then we wouldn't need to escape it as we would scp it but that's more difficult to replace the jenkins_file_content
     job_config = f"""<flow-definition plugin="workflow-job@1498.v33a_0c6f3a_4b_4">
 <description/>
 <keepDependencies>false</keepDependencies>
@@ -140,26 +135,71 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root):
 </flow-definition>"""
 
     # Escape the job config for the shell
-    job_config = shlex.quote(job_config)
-
-    ssh.execute_ssh_command(client, f"echo {job_config} > job_config.xml")
+    if windows:
+        # pwsh escape done w help of chatGPT
+        ssh.execute_ssh_command(client, f'@"\n{job_config}\n"@ | Out-File -Encoding UTF8 job_config.xml')
+        ssh.execute_ssh_command(client, "type job_config.xml")
+    else:
+        job_config = shlex.quote(job_config)
+        ssh.execute_ssh_command(client, f"echo {job_config} > job_config.xml")
 
     # Create and trigger the job
     # See https://www.jenkins.io/doc/book/managing/cli/
-    ssh.execute_ssh_command(
-        client,
-        f"java -jar jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 create-job test_job < ~/job_config.xml",
-    )
+    if windows:
+        ssh.execute_ssh_command(
+            client,
+            f"Get-Content C:\\Users\\aic\\job_config.xml | java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job test_job",
+        )
+    else:
+        ssh.execute_ssh_command(
+            client,
+            # we could also pipe with a cat to make it more like the pwsh command but that's one more dependency and it's less good practice
+            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job test_job < ~/job_config.xml",
+        )
     # we need to approve the job as it's not sandboxed, see groovy script for source
     print("Approving Jenkins job...")
-    ssh.execute_ssh_command(
-        client, f"java -jar jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080  groovy = < approve-scripts.groovy"
-    )
+    if windows:
+        ssh.execute_ssh_command(
+            client,
+            f"Get-Content C:\\Users\\aic\\approve-scripts.groovy | java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080  groovy =",
+        )
+    else:
+        ssh.execute_ssh_command(
+            client, f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080  groovy = < approve-scripts.groovy"
+        )
     print("Triggering Jenkins job...")
-    ssh.execute_ssh_command(
-        client,
-        f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{admin_password} -s http://localhost:8080 build test_job -f -v",
-    )
+    if windows:
+        ssh.execute_ssh_command(
+            client,
+            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
+        )
+    else:
+        ssh.execute_ssh_command(
+            client,
+            f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
+        )
+
+
+def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows):
+    if os.path.exists(os.path.join(project_root, plugin_file)):
+        print("Installing Jenkins plugins...")
+        with open(os.path.join(project_root, plugin_file), "r") as file:
+            plugins = [line.strip() for line in file if line.strip()]
+
+        if plugins:
+            plugins_str = " ".join(plugins)
+            ssh.execute_ssh_command(
+                client, f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 install-plugin {plugins_str} -deploy"
+            )
+            # Restart Jenkins to apply plugin changes
+            if windows:
+                ssh.execute_ssh_command(client, "Restart-Service Jenkins")
+            else:
+                ssh.execute_ssh_command(client, "sudo systemctl restart jenkins")
+            # Wait for Jenkins to come back up
+            time.sleep(30)
+    else:
+        print("No Jenkins plugins file found. Skipping plugin installation.")
 
 
 def cleanup():

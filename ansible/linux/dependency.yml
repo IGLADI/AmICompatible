@@ -73,6 +73,8 @@
             url: "http://localhost:8080/jnlpJars/jenkins-cli.jar"
             dest: "/home/aic/jenkins-cli.jar"
             mode: "0755"
+        retries: 10
+        delay: 10
 
       - name: Ensure Jenkins CLI tool is executable
         file:

@@ -1,5 +1,15 @@
 # AmICompatible
 
+## Use Case
+
+-   **Script Compatibility Testing**: Quickly document which Linux distributions your script runs on by creating a Jenkinsfile that just executes the script.
+
+    -   Example: Deploy an Nginx website => Run with AIC => Discover UFW is missing on some distros => Fix or document it.
+
+-   **Software Retrocompatibility**: Test how well your software runs across different Windows versions.
+
+-   **Emulation Layer Testing**: Check how well your software performs with emulation layers like Wine or Proton for Linux users.
+
 ## Prerequisites
 
 -   [Python 3.x](https://www.python.org/downloads/)

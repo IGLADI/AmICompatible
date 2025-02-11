@@ -4,7 +4,7 @@ import os
 
 
 # create all needed cloud resources
-def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 5):
+def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 3):
     os.environ["TF_VAR_os"] = os_name
     subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True)
 

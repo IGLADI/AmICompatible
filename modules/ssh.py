@@ -46,6 +46,6 @@ def execute_ssh_command(client, command: str, print_output: bool = True):
             print("STDERR:", stderr_str)
 
     if exit_status != 0:
-        raise Exception(f"Command '{command}' failed with exit status {exit_status}")
+        raise Exception(f"Command '{command}' failed with exit status {exit_status}: {stderr_str}")
 
     return stdout_str, stderr_str
