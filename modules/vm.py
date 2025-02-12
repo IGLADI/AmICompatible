@@ -83,8 +83,15 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
     if password and windows:
         # scp does not support password auth OOTB so we use sshpass to automate the password input
         # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
-        # TODO check jenkins job workspace path in windows
-        subprocess.run(f"sshpass -p {password} scp -r {project_root} aic@{ip}:/C:/Users/aic", shell=True, check=True)
+        ssh.execute_ssh_command(
+            client,
+            "New-Item -ItemType Directory -Path C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\test_job",
+        )
+        subprocess.run(
+            f"sshpass -p {password} scp -r {project_root}/* aic@{ip}:C:/Windows/system32/config/systemprofile/AppData/Local/Jenkins/.jenkins/workspace/test_job",
+            shell=True,
+            check=True,
+        )
         subprocess.run(f"sshpass -p {password} scp ./modules/approve-scripts.groovy aic@{ip}:/C:/Users/aic", shell=True, check=True)
     elif not windows:
         # create the default folder jenkins would use so we can place the project files there (else the user would have to edit his Jenkinsfile w the workspace path)

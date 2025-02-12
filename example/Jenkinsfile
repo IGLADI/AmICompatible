@@ -10,11 +10,14 @@ pipeline {
                         sh 'echo "Hostname: $(hostname)"'
                         sh 'echo "Distro: $(cat /etc/*-release | grep PRETTY_NAME | cut -d "=" -f 2)"'
                         sh 'echo "Architecture: $(uname -m)"'
+                        sh 'ls'
                         sh 'cat plugins.txt'
                         sh 'ufw --version'
                     } else {
                         bat 'echo Hostname: %COMPUTERNAME%'
                         bat 'wmic os get Caption,Version,OSArchitecture'
+                        bat 'dir'
+                        bat 'type plugins.txt'
                     }
                 }
             }
