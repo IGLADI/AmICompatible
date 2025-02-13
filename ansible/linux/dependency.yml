@@ -39,8 +39,9 @@
       - name: Install Java (Debian/Ubuntu)
         package:
             name:
-                - openjdk-21-jre
-                - openjdk-21-jdk
+                # debian does not come w openjdk 21 yet so we use 17 for all debian based systems
+                - openjdk-17-jre
+                - openjdk-17-jdk
             state: present
         when: ansible_facts['os_family'] == "Debian"
 
