@@ -22,14 +22,6 @@ resource "azurerm_resource_group" "main" {
   name     = "aic-vm-rg"
 }
 
-# this is to prevent azure to auto create a separate NetworkWatcherRG which would not be known (and deleted) by terraform
-# somimes azure still creates a NetworkWatcherRG, but empty which is fine
-resource "azurerm_network_watcher" "main" {
-  name                = "aic-vm-rg-nw"
-  location            = var.region
-  resource_group_name = azurerm_resource_group.main.name
-}
-
 resource "azurerm_windows_virtual_machine" "main" {
   admin_password = var.password
   admin_username = "aic"
