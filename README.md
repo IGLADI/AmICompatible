@@ -8,7 +8,7 @@
 
 -   **Software Retrocompatibility**: Test how well your software runs across different Windows versions.
 
--   **Emulation Layer Testing**: Check how well your software performs with emulation layers like Wine or Proton for Linux users.
+-   **[Upcoming] Emulation Layer Testing**: Check how well your software performs with emulation layers like Wine or Proton for Linux users.
 
 ## Prerequisites
 
