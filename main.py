@@ -40,6 +40,10 @@ def main():
         print("\nTest Results:")
         for os_name, result in results.items():
             print(f"{os_name}: {result}")
+        if all(result == "succeeded" for result in results.values()):
+            sys.exit(0)
+        else:
+            sys.exit(1)
     finally:
         vm.cleanup()
 
