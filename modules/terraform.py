@@ -1,6 +1,7 @@
 import subprocess
 import re
 import os
+import signal
 
 
 # create all needed cloud resources
@@ -10,7 +11,7 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 3):
 
     for retry in range(max_retries):
         try:
-            subprocess.run("terraform apply -auto-approve", shell=True, cwd=terraform_dir, check=True)
+            execute_safely("terraform apply -auto-approve", shell=True, cwd=terraform_dir, check=True)
             break
         except subprocess.CalledProcessError as e:
             print(f"Terraform apply failed: {e}")
@@ -40,4 +41,16 @@ def get_public_ip(terraform_dir: str):
 
 # destroy any resource made by terraform to limit costs while not in use
 def destroy(terraform_dir: str):
-    subprocess.run("terraform destroy -auto-approve", shell=True, cwd=terraform_dir, check=True)
+    execute_safely("terraform destroy -auto-approve", shell=True, cwd=terraform_dir, check=True)
+
+
+# w help of chatgpt for signal module
+def execute_safely(*args, **kwargs):
+    print("Executing a terraform command, ignoring keyboard interrupts...")
+    old_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    try:
+        # separate sessions to prevent terraform itself from handling the interrupt
+        return subprocess.run(*args, **kwargs, start_new_session=True)
+    finally:
+        signal.signal(signal.SIGINT, old_handler)
+        print("Command executed, keyboard interrupts restored.")
