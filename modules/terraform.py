@@ -1,7 +1,7 @@
-import subprocess
-import re
 import os
+import re
 import signal
+import subprocess
 
 
 # create all needed cloud resources

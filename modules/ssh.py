@@ -1,7 +1,8 @@
 import os
 import subprocess
-import paramiko
 import time
+
+import paramiko
 
 
 # Create single use ssh key

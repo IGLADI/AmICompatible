@@ -1,6 +1,7 @@
-from modules import config, ssh, vm
-import sys
 import os
+import sys
+
+from modules import config, ssh, vm
 
 
 def main():

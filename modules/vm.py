@@ -1,10 +1,11 @@
-from . import terraform, ssh
-import subprocess
 import os
-import shutil
-import time
-import shlex
 import secrets
+import shlex
+import shutil
+import subprocess
+import time
+
+from . import ssh, terraform
 
 
 def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False):
