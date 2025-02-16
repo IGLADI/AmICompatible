@@ -51,18 +51,18 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
     Copy `aic.yml.example` to `aic.yml`:
 
     ```bash
-    cp aic.yml.example aic.yaml
+    cp aic.yml.example aic.yml
     ```
 
-    Update `aic.yaml`:
+    Update `aic.yml`:
 
     ```bash
-    nano aic.yaml
+    nano aic.yml
     ```
 
 5. **Run AIC**
 
-    This would typically be done using github actions or similar (which would also handle the secrets in `aic.yml`).
+    This would typically be done using GitHub Actions or similar (which would also handle the secrets in `aic.yml`).
 
     ```bash
     python main.py
@@ -111,7 +111,7 @@ To add support for additional cloud providers or on-premises infrastructure, fol
 
 4. **Update the configuration file**
 
-    Ensure that the configuration file (`aic.yaml`) includes the new provider and any required variables.
+    Ensure that the configuration file (`aic.yml`) includes the new provider and any required variables.
 
 ### Method 2: Edit Existing Terraform File with Environment Variables
 
@@ -141,7 +141,7 @@ To add support for additional cloud providers or on-premises infrastructure, fol
 
 4. **Update the configuration file**
 
-    Ensure that the configuration file (`aic.yaml`) includes the new provider and any required variables.
+    Ensure that the configuration file (`aic.yml`) includes the new provider and any required variables.
 
 ## Contributing
 
