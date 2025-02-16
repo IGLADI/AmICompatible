@@ -53,5 +53,5 @@
 
       - name: Create Jenkins workspace directory
         ansible.builtin.win_file:
-            path: 'C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\test_job'
+            path: 'C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\aic_job'
             state: directory

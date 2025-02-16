@@ -12,7 +12,7 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 3):
     for retry in range(max_retries):
         try:
             execute_safely("terraform apply -auto-approve", shell=True, cwd=terraform_dir, check=True)
-            break
+            return
         except subprocess.CalledProcessError as e:
             print(f"Terraform apply failed: {e}")
             # seems like the timout is ~3min
@@ -22,11 +22,8 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 3):
             # this is needed as if it timouts terraform does not know what has been made as azure can still actually install ssh and this will create conflict
             print("Destroying resources and retrying")
             destroy(terraform_dir)
-            if retry == max_retries - 1:
-                raise Exception("Max retries reached. Terraform apply failed.")
-            else:
-                print(f"Retrying... Attempt {retry + 1}")
-                continue
+            print(f"Retrying... Attempt {retry + 1}")
+    raise Exception("Max retries reached. Terraform apply failed.")
 
 
 def get_public_ip(terraform_dir: str):

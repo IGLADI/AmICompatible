@@ -84,7 +84,7 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
         # scp does not support password auth OOTB so we use sshpass to automate the password input
         # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
         subprocess.run(
-            f"sshpass -p {password} scp -r {project_root}/* aic@{ip}:C:/Windows/system32/config/systemprofile/AppData/Local/Jenkins/.jenkins/workspace/test_job",
+            f"sshpass -p {password} scp -r {project_root}/* aic@{ip}:C:/Windows/system32/config/systemprofile/AppData/Local/Jenkins/.jenkins/workspace/aic_job",
             shell=True,
             check=True,
         )
@@ -92,7 +92,7 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
     elif not windows:
         # copy the project files to the VM
         subprocess.run(f"scp -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", shell=True, check=True)
-        ssh.execute_ssh_command(client, "sudo cp ~/project/* /var/lib/jenkins/workspace/test_job")
+        ssh.execute_ssh_command(client, "sudo cp ~/project/* /var/lib/jenkins/workspace/aic_job")
         # regive jenkins ownership of the workspace
         ssh.execute_ssh_command(client, "sudo chown -R jenkins:jenkins /var/lib/jenkins")
         subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
@@ -148,13 +148,13 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
     if windows:
         ssh.execute_ssh_command(
             client,
-            f"Get-Content C:\\Users\\aic\\job_config.xml | java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job test_job",
+            f"Get-Content C:\\Users\\aic\\job_config.xml | java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job aic_job",
         )
     else:
         ssh.execute_ssh_command(
             client,
             # we could also pipe with a cat to make it more like the pwsh command but that's one more dependency and it's less good practice in unix
-            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job test_job < ~/job_config.xml",
+            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job aic_job < ~/job_config.xml",
         )
     # we need to approve the job as it's not sandboxed, see groovy script for source
     print("Approving Jenkins job...")
@@ -169,16 +169,10 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
         )
     print("Triggering Jenkins job...")
     try:
-        if windows:
-            ssh.execute_ssh_command(
-                client,
-                f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
-            )
-        else:
-            ssh.execute_ssh_command(
-                client,
-                f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
-            )
+        ssh.execute_ssh_command(
+            client,
+            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build aic_job -f -v",
+        )
     except Exception as e:
         raise RuntimeError("Jenkins pipeline failed. This is not an AIC error. Check the logs for more information.") from e
 
@@ -199,10 +193,20 @@ def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root,
                 ssh.execute_ssh_command(client, "Restart-Service Jenkins")
             else:
                 ssh.execute_ssh_command(client, "sudo systemctl restart jenkins")
-            # Wait for Jenkins to come back up
-            time.sleep(30)
+            wait_jenkins(client)
     else:
         print("No Jenkins plugins file found. Skipping plugin installation.")
+
+
+def wait_jenkins(client, wait_time=10, max_retries=5):
+    print("Waiting for Jenkins to come back up...")
+    for retry in range(1, max_retries + 1):
+        try:
+            ssh.execute_ssh_command(client, "java -jar jenkins-cli.jar -s http://localhost:8080 who-am-i", print_output=False)
+            return
+        except Exception:
+            time.sleep(wait_time)
+    raise RuntimeError("Max retries reached. Jenkins did not come back up.")
 
 
 def cleanup():

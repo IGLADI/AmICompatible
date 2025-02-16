@@ -84,6 +84,6 @@
 
       - name: Create Jenkins workspace directory
         file:
-            path: /var/lib/jenkins/workspace/test_job
+            path: /var/lib/jenkins/workspace/aic_job
             state: directory
             mode: "0755"
