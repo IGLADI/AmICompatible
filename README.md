@@ -1,6 +1,12 @@
+<!-- Disclaimer: This README has been made w help of AI -->
+
 # AmICompatible
 
-## Use Case
+## Overview
+
+AmICompatible (AIC) is a tool designed to help you test the compatibility of your software across different platforms. Whether you already have a Jenkins pipeline in place or prefer to start with a simple Jenkinsfile that runs your script, AIC can help you quickly identify any compatibility issues with your software.
+
+## Use Cases
 
 -   **Script Compatibility Testing**: Quickly document which Linux distributions your script runs on by creating a Jenkinsfile that just executes the script.
 
@@ -8,7 +14,7 @@
 
 -   **Software Retrocompatibility**: Test how well your software runs across different Windows versions.
 
--   **[Upcoming] Emulation Layer Testing**: Check how well your software performs with emulation layers like Wine or Proton for Linux users.
+-   **[Upcoming] Emulation Layer Testing**: Check how well your software performs with emulation layers like [Wine](https://www.winehq.org) or Proton for [Linux users.](https://www.protondb.com/explore)
 
 ## Prerequisites
 
@@ -61,3 +67,109 @@
     ```bash
     python main.py
     ```
+
+## How to Add Providers
+
+To add support for additional cloud providers or on-premises infrastructure, follow these steps:
+
+### Method 1: Create a New Terraform Directory
+
+1. **Create a new Terraform directory for the provider**
+
+    ```bash
+    mkdir terraform/aws
+    ```
+
+2. **Add Terraform configuration files**
+
+    Add the necessary Terraform configuration files in the newly created directory to define the infrastructure for the provider.
+
+3. **Modify the `main.py` script**
+
+    ```bash
+    nano main.py
+    ```
+
+    Example:
+
+    ```python
+    match cfg["platform"]:
+        case "azure":
+            terraform_dir = "./terraform/azure"
+        case "aws":
+            terraform_dir = "./terraform/aws"
+        case _:
+            print(f"Error: Unsupported platform '{cfg['platform']}' specified.")
+            sys.exit(1)
+    ```
+
+    You may also need to update `config.py` to include any provider-specific variables.
+
+    ```bash
+    nano ./modules/config.py
+    ```
+
+4. **Update the configuration file**
+
+    Ensure that the configuration file (`aic.yaml`) includes the new provider and any required variables.
+
+### Method 2: Edit Existing Terraform File with Environment Variables
+
+1. **Move the existing Terraform files**
+
+    ```bash
+    mv terraform/azure/* terraform/
+    ```
+
+2. **Edit the Terraform files**
+
+    Update the Terraform files to use environment variables for provider-specific configurations.
+
+3. **Modify the `main.py` script**
+
+    Update the `config.py` script to set the appropriate environment variables based on the provider specified in the configuration.
+
+    ```bash
+    nano ./modules/config.py
+    ```
+
+    Update the `main.py` script to work with one terraform directory.
+
+    ```python
+    terraform_dir = "./terraform"
+    ```
+
+4. **Update the configuration file**
+
+    Ensure that the configuration file (`aic.yaml`) includes the new provider and any required variables.
+
+## Contributing
+
+To contribute your changes (like adding support for a new provider), follow these steps:
+
+Fork the repository and clone it to your local machine.
+
+Create a new feature branch.
+
+```bash
+git checkout -b feature/add-aws-support
+```
+
+Code your changes and commit them.
+
+```bash
+git add .
+git commit -m "Add AWS support"
+```
+
+Push to your fork.
+
+```bash
+git push origin feature/add-aws-support
+```
+
+**Note:** Ensure you document your changes and update the README if necessary.
+
+Open a PR on the main repository to merge your changes.
+
+Thank you for contributing to the open-source community!
