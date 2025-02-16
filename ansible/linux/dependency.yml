@@ -48,8 +48,8 @@
       - name: Install Java (RHEL/Fedora)
         package:
             name:
-                - java-21-openjdk
-                - java-21-openjdk-devel
+                - java-17-openjdk
+                - java-17-openjdk-devel
             state: present
         when: ansible_facts['os_family'] == "RedHat"
 
