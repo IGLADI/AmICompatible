@@ -50,3 +50,8 @@
         # retries to wait for jenkins to start as it takes some time on windows
         retries: 10
         delay: 10
+
+      - name: Create Jenkins workspace directory
+        ansible.builtin.win_file:
+            path: 'C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\test_job'
+            state: directory

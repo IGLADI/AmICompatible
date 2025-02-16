@@ -81,3 +81,9 @@
         file:
             path: "/home/aic/jenkins-cli.jar"
             mode: "0755"
+
+      - name: Create Jenkins workspace directory
+        file:
+            path: /var/lib/jenkins/workspace/test_job
+            state: directory
+            mode: "0755"

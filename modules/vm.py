@@ -48,7 +48,6 @@ def create_ansible_inventory(ip, password=None, powershell=False, windows=False)
         if powershell:
             inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=powershell ansible_python_interpreter=none"
         else:
-            # ansible ssh via cmd and then run powershell
             inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=cmd ansible_python_interpreter=none"
     elif not windows:
         inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
@@ -84,10 +83,6 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
     if password and windows:
         # scp does not support password auth OOTB so we use sshpass to automate the password input
         # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
-        ssh.execute_ssh_command(
-            client,
-            "New-Item -ItemType Directory -Path C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\test_job",
-        )
         subprocess.run(
             f"sshpass -p {password} scp -r {project_root}/* aic@{ip}:C:/Windows/system32/config/systemprofile/AppData/Local/Jenkins/.jenkins/workspace/test_job",
             shell=True,
@@ -95,8 +90,6 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
         )
         subprocess.run(f"sshpass -p {password} scp ./modules/approve-scripts.groovy aic@{ip}:/C:/Users/aic", shell=True, check=True)
     elif not windows:
-        # create the default folder jenkins would use so we can place the project files there (else the user would have to edit his Jenkinsfile w the workspace path)
-        ssh.execute_ssh_command(client, "sudo mkdir -p /var/lib/jenkins/workspace/test_job")
         # copy the project files to the VM
         subprocess.run(f"scp -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", shell=True, check=True)
         ssh.execute_ssh_command(client, "sudo cp ~/project/* /var/lib/jenkins/workspace/test_job")
@@ -160,7 +153,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
     else:
         ssh.execute_ssh_command(
             client,
-            # we could also pipe with a cat to make it more like the pwsh command but that's one more dependency and it's less good practice
+            # we could also pipe with a cat to make it more like the pwsh command but that's one more dependency and it's less good practice in unix
             f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job test_job < ~/job_config.xml",
         )
     # we need to approve the job as it's not sandboxed, see groovy script for source
