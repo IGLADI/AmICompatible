@@ -175,16 +175,19 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
             client, f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080  groovy = < approve-scripts.groovy"
         )
     print("Triggering Jenkins job...")
-    if windows:
-        ssh.execute_ssh_command(
-            client,
-            f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
-        )
-    else:
-        ssh.execute_ssh_command(
-            client,
-            f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
-        )
+    try:
+        if windows:
+            ssh.execute_ssh_command(
+                client,
+                f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
+            )
+        else:
+            ssh.execute_ssh_command(
+                client,
+                f"cd /var/lib/jenkins/workspace/test_job && java -jar ~/jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 build test_job -f -v",
+            )
+    except Exception as e:
+        raise RuntimeError("Jenkins pipeline failed. This is not an AIC error. Check the logs for more information.") from e
 
 
 def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows):
