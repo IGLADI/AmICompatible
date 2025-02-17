@@ -227,3 +227,14 @@ git push origin feature/add-aws-support
 Open a PR on the main repository to merge your changes.
 
 Thank you for contributing to the open-source community!
+
+## Troubleshooting
+
+If you encounter any issues with terraform, this is most likely due to a mismatch between the tfstate file and the actual resources in the cloud. To fix this, you can delete the tfstate file **and** delete any resources that were created by the script manually.
+
+```bash
+rm ./terraform/azure/linux/terraform.tfstate*
+rm ./terraform/azure/windows/terraform.tfstate*
+```
+
+**Note:**: You will need to wait for the resources to be deleted before running the script again.
