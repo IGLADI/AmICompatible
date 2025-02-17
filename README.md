@@ -68,6 +68,10 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
     python main.py
     ```
 
+## Limitation
+
+AIC will install dependencies which might not come with the system. If your code uses these dependencies, it might work on AIC but not on a clean system. For example, Java will be installed by AIC but not present on a clean system.
+
 ## How to Add Providers
 
 To add support for additional cloud providers or on-premises infrastructure, follow these steps:
