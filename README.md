@@ -147,6 +147,56 @@ To add support for additional cloud providers or on-premises infrastructure, fol
 
     Ensure that the configuration file (`aic.yml`) includes the new provider and any required variables.
 
+## How to Add Supported OS
+
+To add support for additional operating systems, follow these steps:
+
+1. **Update Terraform Main Configuration**
+
+    Add the new OS to the `source_image_reference` lookup in the `main.tf` file for both Windows or Linux configurations.
+
+    ```terraform
+    source_image_reference {
+      publisher = lookup({
+        UbuntuServer_24_04-LTS = "Canonical",
+        RHEL9                  = "RedHat",
+        Debian12               = "Debian",
+        <new_os>               = "<new_publisher>"
+      }, var.os)
+      offer = lookup({
+        UbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
+        RHEL9                  = "RHEL",
+        Debian12               = "debian-12",
+        <new_os>               = "<new_offer>"
+      }, var.os)
+      sku = lookup({
+        UbuntuServer_24_04-LTS = "server",
+        RHEL9                  = "90-gen2",
+        Debian12               = "12-gen2",
+        <new_os>               = "<new_sku>"
+      }, var.os)
+      version = "latest"
+    }
+    ```
+
+2. **Update Configuration File**
+
+    Add the new OS to the `aic.yml` and `aic.yml.example` files.
+
+    ```yaml
+    os:
+        - MicrosoftWindowsServer-2022-datacenter
+        # - Windows11
+        - UbuntuServer_24_04-LTS
+        # - Debian12
+        - RHEL9
+        # - <new_os>
+    ```
+
+3. **Add OS-Specific Code**
+
+    If the new OS requires any specific setup or dependencies, update the corresponding code, this will likely be in the `ansible/linux/dependency.yml`
+
 ## Contributing
 
 To contribute your changes (like adding support for a new provider), follow these steps:
