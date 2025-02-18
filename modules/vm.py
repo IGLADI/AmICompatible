@@ -92,7 +92,7 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
     elif not windows:
         # copy the project files to the VM
         subprocess.run(f"scp -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", shell=True, check=True)
-        ssh.execute_ssh_command(client, "sudo cp ~/project/* /var/lib/jenkins/workspace/aic_job")
+        ssh.execute_ssh_command(client, "sudo cp -r ~/project/* /var/lib/jenkins/workspace/aic_job")
         # regive jenkins ownership of the workspace
         ssh.execute_ssh_command(client, "sudo chown -R jenkins:jenkins /var/lib/jenkins")
         subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
