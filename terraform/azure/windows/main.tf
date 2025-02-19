@@ -31,9 +31,7 @@ resource "azurerm_windows_virtual_machine" "main" {
     azurerm_network_interface.main.id,
   ]
   resource_group_name = "aic-vm-rg"
-  secure_boot_enabled = true
   size                = var.vm_size
-  vtpm_enabled        = true
   additional_capabilities {
   }
 
@@ -46,17 +44,21 @@ resource "azurerm_windows_virtual_machine" "main" {
   }
 
   source_image_reference {
+    # see https://learn.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage#code-try-6
     publisher = lookup({
-      MicrosoftWindowsServer-2022-datacenter = "MicrosoftWindowsServer"
-      Windows11                              = "microsoftwindowsdesktop"
+      WindowsServer-2022-datacenter = "MicrosoftWindowsServer",
+      WindowsServer-2016-datacenter = "MicrosoftWindowsServer",
+      Windows11                     = "microsoftwindowsdesktop",
     }, var.os)
     offer = lookup({
-      MicrosoftWindowsServer-2022-datacenter = "WindowsServer"
-      Windows11                              = "windows-11"
+      WindowsServer-2022-datacenter = "WindowsServer",
+      WindowsServer-2016-datacenter = "WindowsServer",
+      Windows11                     = "windows-11",
     }, var.os)
     sku = lookup({
-      MicrosoftWindowsServer-2022-datacenter = "2022-datacenter-azure-edition"
-      Windows11                              = "win11-22h2-entn"
+      WindowsServer-2022-datacenter = "2022-datacenter-azure-edition",
+      WindowsServer-2016-datacenter = "2016-datacenter",
+      Windows11                     = "win11-22h2-entn",
     }, var.os)
     version = "latest"
   }

@@ -101,22 +101,46 @@ resource "azurerm_linux_virtual_machine" "main" {
   }
 
   source_image_reference {
+    # see https://learn.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage#code-try-6
     publisher = lookup({
-      UbuntuServer_24_04-LTS = "Canonical",
-      RHEL9                  = "RedHat",
-      Debian12               = "Debian"
+      LinuxUbuntuServer_24_04-LTS = "Canonical",
+      LinuxRhel9                  = "RedHat",
+      LinuxDebian12               = "Debian",
+      LinuxCentos8                = "openlogic",
+      LinuxRocky9                 = "resf",
+      LinuxAlma9                  = "almalinux"
     }, var.os)
     offer = lookup({
-      UbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
-      RHEL9                  = "RHEL",
-      Debian12               = "debian-12"
+      LinuxUbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
+      LinuxRhel9                  = "RHEL",
+      LinuxDebian12               = "debian-12",
+      LinuxCentos8                = "centos",
+      LinuxRocky9                 = "rockylinux-x86_64",
+      LinuxAlma9                  = "almalinux-x86_64"
     }, var.os)
     sku = lookup({
-      UbuntuServer_24_04-LTS = "server",
-      RHEL9                  = "90-gen2",
-      Debian12               = "12-gen2"
+      LinuxUbuntuServer_24_04-LTS = "server",
+      LinuxRhel9                  = "90-gen2",
+      LinuxDebian12               = "12-gen2",
+      LinuxCentos8                = "8_2",
+      LinuxRocky9                 = "9-base",
+      LinuxAlma9                  = "9-gen1"
     }, var.os)
     version = "latest"
+  }
+
+  # only some images need to specify a plan
+  # w help of chatGPT for dynamic block
+  dynamic "plan" {
+    for_each = lookup({
+      LinuxRocky9 = [{ name = "9-base", product = "rockylinux-x86_64", publisher = "resf" }]
+    }, var.os, [])
+
+    content {
+      name      = plan.value.name
+      product   = plan.value.product
+      publisher = plan.value.publisher
+    }
   }
 }
 

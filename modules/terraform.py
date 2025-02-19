@@ -11,7 +11,7 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 1):
     os.environ["TF_VAR_os"] = os_name
     subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True)
 
-    for retry in range(max_retries):
+    for retry in range(1, max_retries + 1):
         try:
             execute_safely("terraform apply -auto-approve", shell=True, cwd=terraform_dir)
             return
@@ -24,7 +24,7 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 1):
             # this is needed as if it timouts terraform does not know what has been made as azure can still actually install ssh and this will create conflict
             print("Destroying resources and retrying")
             destroy(terraform_dir)
-            if retry + 1 <= max_retries:
+            if retry < max_retries:
                 print(f"Retrying... Attempt {retry + 1}")
     raise Exception("Max retries reached. Terraform apply failed.")
 

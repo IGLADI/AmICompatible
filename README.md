@@ -158,22 +158,22 @@ To add support for additional operating systems, follow these steps:
     ```terraform
     source_image_reference {
       publisher = lookup({
-        UbuntuServer_24_04-LTS = "Canonical",
-        RHEL9                  = "RedHat",
-        Debian12               = "Debian",
-        <new_os>               = "<new_publisher>"
+        LinuxUbuntuServer_24_04-LTS = "Canonical",
+        LinuxRhel9                  = "RedHat",
+        LinuxDebian12               = "Debian",
+        <new_os>                    = "<new_publisher>"
       }, var.os)
       offer = lookup({
-        UbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
-        RHEL9                  = "RHEL",
-        Debian12               = "debian-12",
-        <new_os>               = "<new_offer>"
+        LinuxUbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
+        LinuxRhel9                  = "RHEL",
+        LinuxDebian12               = "debian-12",
+        <new_os>                    = "<new_offer>"
       }, var.os)
       sku = lookup({
-        UbuntuServer_24_04-LTS = "server",
-        RHEL9                  = "90-gen2",
-        Debian12               = "12-gen2",
-        <new_os>               = "<new_sku>"
+        LinuxUbuntuServer_24_04-LTS = "server",
+        LinuxRhel9                  = "90-gen2",
+        LinuxDebian12               = "12-gen2",
+        <new_os>                    = "<new_sku>"
       }, var.os)
       version = "latest"
     }
@@ -238,3 +238,14 @@ rm ./terraform/azure/windows/terraform.tfstate*
 ```
 
 **Note:**: You will need to wait for the resources to be deleted before running the script again.
+
+If you encounter any issue while terraform deploys a specific VM image:
+
+-   Check if your subscription tier is eligible for that image (a lot of images are not available for free plans).
+-   Accept TOS when needed:
+
+    ```bash
+    az vm image terms accept --publisher resf --offer rockylinux-x86_64 --plan 9-base
+    ```
+
+We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
