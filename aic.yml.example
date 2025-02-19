@@ -9,15 +9,16 @@ tenant_id: <tenant_id>
 client_secret: <client_secret>
 # uncomment all platforms you want to test on
 os:
-    - WindowsServer-2022-datacenter
-    - WindowsServer-2016-datacenter
-    - Windows11
-    - LinuxDebian12
-    - LinuxUbuntuServer_24_04-LTS
-    - LinuxRhel9
-    - LinuxCentos8
-    - LinuxRocky9
-    - LinuxAlma9
+    # - WindowsServer-2025-datacenter
+    # - WindowsServer-2022-datacenter
+    # - WindowsServer-2016-datacenter
+    # - Windows11
+    # - LinuxDebian12
+    # - LinuxUbuntuServer_24_04-LTS
+    # - LinuxRhel9
+    # - LinuxCentos8
+    # - LinuxRocky9
+    # - LinuxAlma9
 # region to run the VMs in
 region: westeurope
 # at BARE MINIMUM use a Standard_B2s if you are using windows vms
