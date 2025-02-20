@@ -185,11 +185,9 @@ To add support for additional operating systems, follow these steps:
 
     ```yaml
     os:
-        - MicrosoftWindowsServer-2022-datacenter
-        # - Windows11
-        - UbuntuServer_24_04-LTS
+        # - UbuntuServer_24_04-LTS
         # - Debian12
-        - RHEL9
+        # - RHEL9
         # - <new_os>
     ```
 

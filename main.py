@@ -35,7 +35,7 @@ def main():
                 print(f"Deployment and test for {os_name} succeeded.")
                 results[os_name] = "succeeded"
             except Exception as e:
-                print(f"Deployment and test for {os_name} failed: {e}")
+                print(f"Deployment or test for {os_name} failed: {e}")
                 results[os_name] = f"failed: {e}"
 
         print("\nTest Results:")
