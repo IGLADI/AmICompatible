@@ -37,3 +37,7 @@ variable "arm" {
 variable "arm_vm_size" {
   type = string
 }
+
+variable "resource_group_name" {
+  type = string
+}

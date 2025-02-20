@@ -51,7 +51,7 @@ def destroy(terraform_dir: str):
 # w help of chatgpt for signal module
 def execute_safely(*args, ignore_all_interrupts=False, **kwargs):
     if ignore_all_interrupts:
-        print("Executing a terraform command, ignoring all keyboard interrupts...")
+        print("Executing critical terraform command, ignoring all keyboard interrupts...")
     else:
         print("Executing a terraform command, only passing the first keyboard interrupt...")
 

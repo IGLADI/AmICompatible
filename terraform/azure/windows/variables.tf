@@ -29,3 +29,7 @@ variable "vm_size" {
 variable "os" {
   type = string
 }
+
+variable "resource_group_name" {
+  type = string
+}

@@ -19,7 +19,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "main" {
   location = var.region
-  name     = "aic-vm-rg"
+  name     = var.resource_group_name
 }
 
 resource "azurerm_windows_virtual_machine" "main" {
@@ -30,7 +30,7 @@ resource "azurerm_windows_virtual_machine" "main" {
   network_interface_ids = [
     azurerm_network_interface.main.id,
   ]
-  resource_group_name = "aic-vm-rg"
+  resource_group_name = azurerm_resource_group.main.name
   size                = var.vm_size
   additional_capabilities {
   }
@@ -91,7 +91,7 @@ resource "azurerm_virtual_machine_extension" "main" {
 resource "azurerm_network_interface" "main" {
   location            = var.region
   name                = "win556_z3"
-  resource_group_name = "aic-vm-rg"
+  resource_group_name = azurerm_resource_group.main.name
   ip_configuration {
     name                          = "ipconfig1"
     private_ip_address_allocation = "Dynamic"
@@ -116,7 +116,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
 resource "azurerm_network_security_group" "main" {
   location            = var.region
   name                = "win-nsg"
-  resource_group_name = "aic-vm-rg"
+  resource_group_name = azurerm_resource_group.main.name
   depends_on = [
     azurerm_resource_group.main,
   ]
@@ -131,7 +131,7 @@ resource "azurerm_network_security_rule" "main" {
   network_security_group_name = "win-nsg"
   priority                    = 320
   protocol                    = "Tcp"
-  resource_group_name         = "aic-vm-rg"
+  resource_group_name         = azurerm_resource_group.main.name
   source_address_prefix       = "*"
   source_port_range           = "*"
   depends_on = [
@@ -143,7 +143,7 @@ resource "azurerm_public_ip" "main" {
   allocation_method   = "Static"
   location            = var.region
   name                = "win-ip"
-  resource_group_name = "aic-vm-rg"
+  resource_group_name = azurerm_resource_group.main.name
   depends_on = [
     azurerm_resource_group.main,
   ]
@@ -153,7 +153,7 @@ resource "azurerm_virtual_network" "main" {
   address_space       = ["10.0.0.0/16"]
   location            = var.region
   name                = "win-vnet"
-  resource_group_name = "aic-vm-rg"
+  resource_group_name = azurerm_resource_group.main.name
   depends_on = [
     azurerm_resource_group.main,
   ]
@@ -162,7 +162,7 @@ resource "azurerm_virtual_network" "main" {
 resource "azurerm_subnet" "main" {
   address_prefixes     = ["10.0.0.0/24"]
   name                 = "default"
-  resource_group_name  = "aic-vm-rg"
+  resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = "win-vnet"
   depends_on = [
     azurerm_virtual_network.main,
