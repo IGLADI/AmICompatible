@@ -1,0 +1,57 @@
+# based on copilot creating a base workflow
+name: Test UFW
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+    pull_request:
+        branches:
+            - main
+            - dev
+
+jobs:
+    test-ufw:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
+
+            - name: Set up Python
+              uses: actions/setup-python@v3
+              with:
+                  python-version: 3.13
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v1
+              with:
+                  terraform_version: 1.0.11
+
+            # sed w help of chatgpt
+            - name: Run AIC on Ubuntu
+              run: |
+                  cp aic.yml.example aic.yml
+                  sed -i 's/<subscription_id>/${{ secrets.SUBSCRIPTION_ID }}/' aic.yml
+                  sed -i 's/<appId>/${{ secrets.APPID }}/' aic.yml
+                  sed -i 's/<tenant_id>/${{ secrets.TENANT_ID }}/' aic.yml
+                  sed -i 's/<client_secret>/${{ secrets.CLIENT_SECRET }}/' aic.yml
+                  sed -i 's/# - LinuxUbuntuServer_24_04-LTS/- LinuxUbuntuServer_24_04-LTS/' aic.yml
+                  python main.py
+
+            - name: Run AIC on Debian
+              run: |
+                  cp aic.yml.example aic.yml
+                  sed -i 's/<subscription_id>/${{ secrets.SUBSCRIPTION_ID }}/' aic.yml
+                  sed -i 's/<appId>/${{ secrets.APPID }}/' aic.yml
+                  sed -i 's/<tenant_id>/${{ secrets.TENANT_ID }}/' aic.yml
+                  sed -i 's/<client_secret>/${{ secrets.CLIENT_SECRET }}/' aic.yml
+                  sed -i 's/# - LinuxDebian12/- LinuxDebian12/' aic.yml
+                  python main.py && exit 1 || exit 0
+              # should fail
