@@ -9,6 +9,10 @@ import sys
 # we have set the retries to 1 now we know the issue and fix
 def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 1):
     os.environ["TF_VAR_os"] = os_name
+    if "arm" in os_name.lower():
+        os.environ["TF_VAR_arm"] = "true"
+    else:
+        os.environ["TF_VAR_arm"] = "false"
     subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True)
 
     for retry in range(1, max_retries + 1):

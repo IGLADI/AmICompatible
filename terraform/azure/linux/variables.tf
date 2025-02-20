@@ -29,3 +29,11 @@ variable "client_secret" {
 variable "os" {
   type = string
 }
+
+variable "arm" {
+  type = bool
+}
+
+variable "arm_vm_size" {
+  type = string
+}

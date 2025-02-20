@@ -78,10 +78,11 @@ resource "azurerm_network_interface_security_group_association" "main" {
 }
 
 resource "azurerm_linux_virtual_machine" "main" {
-  name                            = "aic-vm"
-  location                        = azurerm_resource_group.main.location
-  resource_group_name             = azurerm_resource_group.main.name
-  size                            = var.vm_size
+  name                = "aic-vm"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  # use a different vm size for arm as it is not supported by all sizes
+  size                            = var.arm ? var.arm_vm_size : var.vm_size
   disable_password_authentication = true
 
   admin_username = "aic"
@@ -103,28 +104,37 @@ resource "azurerm_linux_virtual_machine" "main" {
   source_image_reference {
     # see https://learn.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage#code-try-6
     publisher = lookup({
-      LinuxUbuntuServer_24_04-LTS = "Canonical",
-      LinuxRhel9                  = "RedHat",
-      LinuxDebian12               = "Debian",
-      LinuxCentos8                = "openlogic",
-      LinuxRocky9                 = "resf",
-      LinuxAlma9                  = "almalinux"
+      LinuxUbuntuServer_24_04-LTS     = "Canonical",
+      LinuxUbuntuServer_24_04-LTS-ARM = "Canonical",
+      LinuxDebian12                   = "Debian",
+      LinuxDebian12-ARM               = "Debian",
+      LinuxRhel9                      = "RedHat",
+      LinuxRhel9-ARM                  = "RedHat",
+      LinuxCentos8                    = "openlogic",
+      LinuxRocky9                     = "resf",
+      LinuxAlma9                      = "almalinux"
     }, var.os)
     offer = lookup({
-      LinuxUbuntuServer_24_04-LTS = "ubuntu-24_04-lts",
-      LinuxRhel9                  = "RHEL",
-      LinuxDebian12               = "debian-12",
-      LinuxCentos8                = "centos",
-      LinuxRocky9                 = "rockylinux-x86_64",
-      LinuxAlma9                  = "almalinux-x86_64"
+      LinuxUbuntuServer_24_04-LTS     = "ubuntu-24_04-lts",
+      LinuxUbuntuServer_24_04-LTS-ARM = "0001-com-ubuntu-server-jammy"
+      LinuxDebian12                   = "debian-12",
+      LinuxDebian12-ARM               = "debian-12",
+      LinuxRhel9                      = "RHEL",
+      LinuxRhel9-ARM                  = "rhel-arm64",
+      LinuxCentos8                    = "centos",
+      LinuxRocky9                     = "rockylinux-x86_64",
+      LinuxAlma9                      = "almalinux-x86_64"
     }, var.os)
     sku = lookup({
-      LinuxUbuntuServer_24_04-LTS = "server",
-      LinuxRhel9                  = "90-gen2",
-      LinuxDebian12               = "12-gen2",
-      LinuxCentos8                = "8_2",
-      LinuxRocky9                 = "9-base",
-      LinuxAlma9                  = "9-gen1"
+      LinuxUbuntuServer_24_04-LTS     = "server",
+      LinuxUbuntuServer_24_04-LTS-ARM = "22_04-lts-arm64",
+      LinuxDebian12                   = "12-gen2",
+      LinuxDebian12-ARM               = "12-arm64",
+      LinuxRhel9                      = "90-gen2",
+      LinuxRhel9-ARM                  = "9_5-arm64",
+      LinuxCentos8                    = "8_2",
+      LinuxRocky9                     = "9-base",
+      LinuxAlma9                      = "9-gen1"
     }, var.os)
     version = "latest"
   }
