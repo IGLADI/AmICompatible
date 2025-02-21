@@ -54,9 +54,8 @@ jobs:
                   sed -i 's/<tenant_id>/${{ secrets.TENANT_ID }}/' aic.yml
                   sed -i 's/<client_secret>/${{ secrets.CLIENT_SECRET }}/' aic.yml
                   sed -i 's/# - LinuxDebian12/- LinuxDebian12/' aic.yml
-                  OUTPUT=$(python main.py)
-                  echo $OUTPUT
-                  if echo "$OUTPUT" | grep -q "Jenkins pipeline failed. This is not an AIC error."; then
+                  OUTPUT=$(python main.py) && echo $OUTPUT || echo $OUTPUT
+                  if echo $OUTPUT | grep -q "Jenkins pipeline failed. This is not an AIC error."; then
                     exit 0
                   else
                     exit 1
