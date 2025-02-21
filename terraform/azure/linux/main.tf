@@ -104,37 +104,40 @@ resource "azurerm_linux_virtual_machine" "main" {
   source_image_reference {
     # see https://learn.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage#code-try-6
     publisher = lookup({
-      LinuxUbuntuServer_24_04-LTS     = "Canonical",
-      LinuxUbuntuServer_24_04-LTS-ARM = "Canonical",
-      LinuxDebian12                   = "Debian",
-      LinuxDebian12-ARM               = "Debian",
-      LinuxRhel9                      = "RedHat",
-      LinuxRhel9-ARM                  = "RedHat",
-      LinuxCentos8                    = "openlogic",
-      LinuxRocky9                     = "resf",
+      LinuxUbuntuServer_24_04-LTS     = "Canonical"
+      LinuxUbuntuServer_24_04-LTS-ARM = "Canonical"
+      LinuxDebian12                   = "Debian"
+      LinuxDebian12-ARM               = "Debian"
+      LinuxRhel9                      = "RedHat"
+      LinuxRhel9-ARM                  = "RedHat"
+      LinuxFedora41                   = "ntegralinc1586961136942"
+      LinuxRocky9                     = "resf"
       LinuxAlma9                      = "almalinux"
+      LinuxOracle9                    = "oracle"
     }, var.os)
     offer = lookup({
-      LinuxUbuntuServer_24_04-LTS     = "ubuntu-24_04-lts",
+      LinuxUbuntuServer_24_04-LTS     = "ubuntu-24_04-lts"
       LinuxUbuntuServer_24_04-LTS-ARM = "0001-com-ubuntu-server-jammy"
-      LinuxDebian12                   = "debian-12",
-      LinuxDebian12-ARM               = "debian-12",
-      LinuxRhel9                      = "RHEL",
-      LinuxRhel9-ARM                  = "rhel-arm64",
-      LinuxCentos8                    = "centos",
-      LinuxRocky9                     = "rockylinux-x86_64",
+      LinuxDebian12                   = "debian-12"
+      LinuxDebian12-ARM               = "debian-12"
+      LinuxRhel9                      = "RHEL"
+      LinuxRhel9-ARM                  = "rhel-arm64"
+      LinuxFedora41                   = "ntg_fedora_41"
+      LinuxRocky9                     = "rockylinux-x86_64"
       LinuxAlma9                      = "almalinux-x86_64"
+      LinuxOracle9                    = "oracle-linux"
     }, var.os)
     sku = lookup({
-      LinuxUbuntuServer_24_04-LTS     = "server",
-      LinuxUbuntuServer_24_04-LTS-ARM = "22_04-lts-arm64",
-      LinuxDebian12                   = "12-gen2",
-      LinuxDebian12-ARM               = "12-arm64",
-      LinuxRhel9                      = "90-gen2",
-      LinuxRhel9-ARM                  = "9_5-arm64",
-      LinuxCentos8                    = "8_2",
-      LinuxRocky9                     = "9-base",
+      LinuxUbuntuServer_24_04-LTS     = "server"
+      LinuxUbuntuServer_24_04-LTS-ARM = "22_04-lts-arm64"
+      LinuxDebian12                   = "12-gen2"
+      LinuxDebian12-ARM               = "12-arm64"
+      LinuxRhel9                      = "90-gen2"
+      LinuxRhel9-ARM                  = "9_5-arm64"
+      LinuxFedora41                   = "ntg_fedora_41"
+      LinuxRocky9                     = "9-base"
       LinuxAlma9                      = "9-gen1"
+      LinuxOracle9                    = "ol94-lvm"
     }, var.os)
     version = "latest"
   }
@@ -143,7 +146,8 @@ resource "azurerm_linux_virtual_machine" "main" {
   # w help of chatGPT for dynamic block
   dynamic "plan" {
     for_each = lookup({
-      LinuxRocky9 = [{ name = "9-base", product = "rockylinux-x86_64", publisher = "resf" }]
+      LinuxRocky9   = [{ name = "9-base", product = "rockylinux-x86_64", publisher = "resf" }]
+      LinuxFedora41 = [{ name = "ntg_fedora_41", product = "ntg_fedora_41", publisher = "ntegralinc1586961136942" }]
     }, var.os, [])
 
     content {

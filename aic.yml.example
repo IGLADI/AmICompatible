@@ -3,10 +3,10 @@ platform: azure
 subscription_id: <subscription_id>
 #  From service principal output
 appId: <appId>
-#  From service principal output
-tenant_id: <tenant_id>
 #  From service principal output (password)
 client_secret: <client_secret>
+#  From service principal output
+tenant_id: <tenant_id>
 # max simultaneous test to run
 max_threads: 3
 # uncomment all platforms you want to test on
@@ -21,9 +21,10 @@ os:
     # - LinuxUbuntuServer_24_04-LTS-ARM
     # - LinuxRhel9
     # - LinuxRhel9-ARM
-    # - LinuxCentos8
+    # - LinuxFedora41
     # - LinuxRocky9
     # - LinuxAlma9
+    # - LinuxOracle9
 # prefix to all resources groups
 rg_prefix: AIC
 # region to run the VMs in

@@ -228,6 +228,20 @@ Thank you for contributing to the open-source community!
 
 ## Troubleshooting
 
+### VM Image Issues
+
+If you encounter any issue while terraform deploys a specific VM image:
+
+-   Check if your subscription tier is eligible for that image (a lot of images are not available for free plans).
+-   Accept TOS when needed:
+
+    ```bash
+    az vm image terms accept --publisher resf --offer rockylinux-x86_64 --plan 9-base
+    az vm image terms accept --publisher ntegralinc1586961136942 --offer ntg_fedora_41 --plan ntg_fedora_41
+    ```
+
+> ℹ️ We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
+
 ### Terraform Apply Issues
 
 If you encounter any issues with terraform, this is most likely due to a mismatch between the tfstate file and the actual resources in the cloud. To fix this, you can delete the tfstate file **and** delete any resources that were created by the script manually.
@@ -238,19 +252,6 @@ rm ./terraform/azure/windows/*.tfstate* > /dev/null 2>&1
 ```
 
 > ℹ️ You will need to wait for the resources to be deleted before running the script again.
-
-### VM Image Issues
-
-If you encounter any issue while terraform deploys a specific VM image:
-
--   Check if your subscription tier is eligible for that image (a lot of images are not available for free plans).
--   Accept TOS when needed:
-
-    ```bash
-    az vm image terms accept --publisher resf --offer rockylinux-x86_64 --plan 9-base
-    ```
-
-> ℹ️ We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
 
 ### Azure Limitations
 
