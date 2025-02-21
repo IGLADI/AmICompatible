@@ -220,13 +220,15 @@ Push to your fork.
 git push origin feature/add-aws-support
 ```
 
-**Note:** Ensure you document your changes and update the README if necessary.
+> ℹ️ Ensure you document your changes and update the README if necessary.
 
 Open a PR on the main repository to merge your changes.
 
 Thank you for contributing to the open-source community!
 
 ## Troubleshooting
+
+### Terraform Apply Issues
 
 If you encounter any issues with terraform, this is most likely due to a mismatch between the tfstate file and the actual resources in the cloud. To fix this, you can delete the tfstate file **and** delete any resources that were created by the script manually.
 
@@ -235,7 +237,9 @@ rm ./terraform/azure/linux/*.tfstate* > /dev/null 2>&1
 rm ./terraform/azure/windows/*.tfstate* > /dev/null 2>&1
 ```
 
-**Note:**: You will need to wait for the resources to be deleted before running the script again.
+> ℹ️ You will need to wait for the resources to be deleted before running the script again.
+
+### VM Image Issues
 
 If you encounter any issue while terraform deploys a specific VM image:
 
@@ -246,6 +250,12 @@ If you encounter any issue while terraform deploys a specific VM image:
     az vm image terms accept --publisher resf --offer rockylinux-x86_64 --plan 9-base
     ```
 
-We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
+> ℹ️ We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
 
-If you encounter a Azure limitation, for example `PublicIPCountLimitReached` try decreasing `max_threads` in `aic.yml` or increase your subscription limits if you are on a paid plan.
+### Azure Limitations
+
+If you encounter an Azure limitation, for example `PublicIPCountLimitReached` try decreasing `max_threads` in `aic.yml` or increase your subscription limits if you are on a paid plan.
+
+### Windows SSH Extension Issues
+
+The extension has a timeout of ~3 minutes to setup ssh, if you encounter any issues with the extension, try increasing `vm_size` in `aic.yml`.
