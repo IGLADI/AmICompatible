@@ -3,26 +3,26 @@ import secrets
 import shutil
 import subprocess
 
-from . import ssh, terraform, jenkins
+from . import jenkins, ssh, terraform
 
 
-def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False):
+def deploy_and_test_vm(terraform_dir, os_name, cfg, env, password=None, windows=False):
     print(f"Deploying {os_name} VM")
-    terraform.init_and_apply(terraform_dir, os_name)
+    terraform.init_and_apply(terraform_dir, os_name, env)
 
     try:
         print("Getting the public IP address...")
-        ip = terraform.get_public_ip(terraform_dir)
+        ip = terraform.get_public_ip(terraform_dir, os_name)
 
         print("Connecting to the VM via SSH...")
         # for windows this only serves to wait for ssh to be available
         client = ssh.connect_to_vm(ip, password=password)
 
         print("Creating Ansible inventory...")
-        create_ansible_inventory(ip, password, windows=windows)
+        create_ansible_inventory(ip, os_name, password, windows=windows)
 
         print("Downloading remote dependencies...")
-        download_remote_dependency(password, windows, ip)
+        download_remote_dependency(os_name, password, windows, ip)
 
         if windows:
             print("Recreating the ssh connection with powershell as shell...")
@@ -36,12 +36,12 @@ def deploy_and_test_vm(terraform_dir, os_name, cfg, password=None, windows=False
         jenkins.run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], password, windows)
     finally:
         print("Cleaning up...")
-        terraform.destroy(terraform_dir)
+        terraform.destroy(terraform_dir, os_name, env)
         if client:
             client.close()
 
 
-def create_ansible_inventory(ip, password=None, powershell=False, windows=False):
+def create_ansible_inventory(ip, os_name, password=None, powershell=False, windows=False):
     if password and windows:
         if powershell:
             inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=powershell ansible_python_interpreter=none"
@@ -50,31 +50,31 @@ def create_ansible_inventory(ip, password=None, powershell=False, windows=False)
     elif not windows:
         inventory = f"{ip} ansible_user=aic ansible_ssh_private_key_file=./temp/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'"
     else:
-        raise ValueError("This combination of arguments is not supported")
-    with open("./temp/inventory.ini", "w") as ini:
+        raise ValueError("Create Inventory: This combination of arguments is not supported")
+    with open(f"./temp/{os_name}.ini", "w") as ini:
         ini.write(inventory)
 
 
-def download_remote_dependency(password=None, windows=False, ip=None):
+def download_remote_dependency(os_name, password=None, windows=False, ip=None):
     if password and windows:
         # set pwsh as default shell
         subprocess.run(
-            "ansible-playbook -i ./temp/inventory.ini ansible/windows/shell.yml",
+            f"ansible-playbook -i ./temp/{os_name}.ini ansible/windows/shell.yml",
             shell=True,
             check=True,
         )
         # install dependencies
-        create_ansible_inventory(ip, password, powershell=True, windows=windows)
+        create_ansible_inventory(ip, os_name, password, True, windows)
         subprocess.run(
-            "ansible-playbook -i ./temp/inventory.ini ansible/windows/dependency.yml",
+            f"ansible-playbook -i ./temp/{os_name}.ini ansible/windows/dependency.yml",
             shell=True,
             check=True,
         )
     elif not windows:
         # rsa path is in the ini file
-        subprocess.run("ansible-playbook -i ./temp/inventory.ini ansible/linux/dependency.yml", shell=True, check=True)
+        subprocess.run(f"ansible-playbook -i ./temp/{os_name}.ini ansible/linux/dependency.yml", shell=True, check=True)
     else:
-        raise ValueError("This combination of arguments is not supported")
+        raise ValueError("Download Defendency: This combination of arguments is not supported")
 
 
 def copy_project_files(client, ip, project_root, password=None, windows=False):
@@ -95,7 +95,12 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
         ssh.execute_ssh_command(client, "sudo chown -R jenkins:jenkins /var/lib/jenkins")
         subprocess.run(f"scp -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", shell=True, check=True)
     else:
-        raise ValueError("This combination of arguments is not supported")
+        raise ValueError("Copy Project: This combination of arguments is not supported")
+
+
+def init():
+    os.makedirs("temp", exist_ok=True)
+    ssh.create_ssh_key()
 
 
 def cleanup():

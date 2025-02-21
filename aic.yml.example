@@ -7,6 +7,8 @@ appId: <appId>
 tenant_id: <tenant_id>
 #  From service principal output (password)
 client_secret: <client_secret>
+# max simultaneous test to run
+max_threads: 3
 # uncomment all platforms you want to test on
 os:
     # - WindowsServer-2025-datacenter
@@ -22,6 +24,8 @@ os:
     # - LinuxCentos8
     # - LinuxRocky9
     # - LinuxAlma9
+# prefix to all resources groups
+rg_prefix: AIC
 # region to run the VMs in
 region: westeurope
 # at BARE MINIMUM use a Standard_B2s if you are using windows vms

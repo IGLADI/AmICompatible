@@ -231,8 +231,8 @@ Thank you for contributing to the open-source community!
 If you encounter any issues with terraform, this is most likely due to a mismatch between the tfstate file and the actual resources in the cloud. To fix this, you can delete the tfstate file **and** delete any resources that were created by the script manually.
 
 ```bash
-rm ./terraform/azure/linux/terraform.tfstate*
-rm ./terraform/azure/windows/terraform.tfstate*
+rm ./terraform/azure/linux/*.tfstate* > /dev/null 2>&1
+rm ./terraform/azure/windows/*.tfstate* > /dev/null 2>&1
 ```
 
 **Note:**: You will need to wait for the resources to be deleted before running the script again.
@@ -247,3 +247,5 @@ If you encounter any issue while terraform deploys a specific VM image:
     ```
 
 We try to keep all TOS commands needed here, if you encounter one not listed here please contribute or open an issue.
+
+If you encounter a Azure limitation, for example `PublicIPCountLimitReached` try decreasing `max_threads` in `aic.yml` or increase your subscription limits if you are on a paid plan.

@@ -1,23 +1,24 @@
-import os
 import re
 import signal
 import subprocess
 import sys
+import threading
 
 
 # create all needed cloud resources
 # we have set the retries to 1 now we know the issue and fix
-def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 1):
-    os.environ["TF_VAR_os"] = os_name
+def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int = 1):
+    env["TF_VAR_os"] = os_name
     if "arm" in os_name.lower():
-        os.environ["TF_VAR_arm"] = "true"
+        env["TF_VAR_arm"] = "true"
     else:
-        os.environ["TF_VAR_arm"] = "false"
-    subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True)
+        env["TF_VAR_arm"] = "false"
+    subprocess.run("terraform init", shell=True, cwd=terraform_dir, check=True, env=env)
 
     for retry in range(1, max_retries + 1):
         try:
-            execute_safely("terraform apply -auto-approve", shell=True, cwd=terraform_dir)
+            # use a separate state file for each thread
+            execute_safely(f"terraform apply -state-out={os_name}.tfstate -auto-approve -lock=false", shell=True, cwd=terraform_dir, env=env)
             return
         except subprocess.CalledProcessError as e:
             print(f"Terraform apply failed: {e}")
@@ -27,14 +28,16 @@ def init_and_apply(terraform_dir: str, os_name: str, max_retries: int = 1):
             print("To prevent this in the future increase the vm size when using windows")
             # this is needed as if it timouts terraform does not know what has been made as azure can still actually install ssh and this will create conflict
             print("Destroying resources and retrying")
-            destroy(terraform_dir)
+            destroy(terraform_dir, os_name, env)
             if retry < max_retries:
                 print(f"Retrying... Attempt {retry + 1}")
     raise Exception("Max retries reached. Terraform apply failed.")
 
 
-def get_public_ip(terraform_dir: str):
-    result = subprocess.run("terraform output public_ip", shell=True, cwd=terraform_dir, check=True, capture_output=True, text=True)
+def get_public_ip(terraform_dir: str, os_name: str):
+    result = subprocess.run(
+        f"terraform output -state={os_name}.tfstate public_ip", shell=True, cwd=terraform_dir, check=True, capture_output=True, text=True
+    )
     # regex to find an ipv4 w help of ChatGPT
     ip_pattern = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
     match = re.search(ip_pattern, result.stdout)
@@ -44,12 +47,20 @@ def get_public_ip(terraform_dir: str):
 
 
 # destroy any resource made by terraform to limit costs while not in use
-def destroy(terraform_dir: str):
-    execute_safely("terraform destroy -auto-approve", shell=True, cwd=terraform_dir, ignore_all_interrupts=True)
+def destroy(terraform_dir: str, os_name: str, env: dict):
+    # this will send a deprecated warning as it's a legacy feature, however no new replacement seem to be valid for this edge case
+    # see https://developer.hashicorp.com/terraform/language/backend/local
+    execute_safely(
+        f"terraform destroy -state={os_name}.tfstate -lock=false -auto-approve",
+        shell=True,
+        cwd=terraform_dir,
+        env=env,
+        ignore_all_interrupts=True,
+    )
 
 
 # w help of chatgpt for signal module
-def execute_safely(*args, ignore_all_interrupts=False, **kwargs):
+def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
     if ignore_all_interrupts:
         print("Executing critical terraform command, ignoring all keyboard interrupts...")
     else:
@@ -69,12 +80,16 @@ def execute_safely(*args, ignore_all_interrupts=False, **kwargs):
                 print("Subsequent Ctrl+C ignored.")
 
     first_interrupt = True
-    old_handler = signal.signal(signal.SIGINT, handler)
+    if threading.current_thread() is threading.main_thread():
+        old_handler = signal.signal(signal.SIGINT, handler)
+    else:
+        old_handler = None
 
     try:
         proc = subprocess.Popen(
             *args,
             **kwargs,
+            env=env,
             # Use stdout and stderr as the current terminal output
             stdout=sys.stdout,
             stderr=sys.stderr,
@@ -99,5 +114,6 @@ def execute_safely(*args, ignore_all_interrupts=False, **kwargs):
 
         return proc.returncode
     finally:
-        signal.signal(signal.SIGINT, old_handler)
+        if old_handler is not None:
+            signal.signal(signal.SIGINT, old_handler)
         print("Command executed, keyboard interrupts restored.")
