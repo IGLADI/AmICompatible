@@ -31,9 +31,9 @@ rg_prefix: AIC
 # region to run the VMs in
 region: westeurope
 # at BARE MINIMUM use a Standard_B2s if you are using windows vms
-vm_size: Standard_B2s
+vm_size: Standard_B2s_v2
 # same but for ARM vm's
-arm_vm_size: Standard_B2pts_v2
+arm_vm_size: Standard_B2ps_v2
 # directory AIC will copy to the VM
 project_root: ./example
 # jenkins file path based on the project root
