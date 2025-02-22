@@ -62,6 +62,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
             f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080 create-job aic_job < ~/job_config.xml",
         )
     # we need to approve the job as it's not sandboxed, see groovy script for source
+
     print("Approving Jenkins job...")
     if windows:
         ssh.execute_ssh_command(
@@ -72,6 +73,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
         ssh.execute_ssh_command(
             client, f"java -jar jenkins-cli.jar -auth admin:{jenkins_password} -s http://localhost:8080  groovy = < approve-scripts.groovy"
         )
+
     print("Triggering Jenkins job...")
     try:
         ssh.execute_ssh_command(
