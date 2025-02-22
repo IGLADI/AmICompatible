@@ -16,6 +16,8 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
 
 -   **[Upcoming] Emulation Layer Testing**: Check how well your software performs with emulation layers like [Wine](https://www.winehq.org) or Proton for [Linux users.](https://www.protondb.com/explore)
 
+-   **Quick Pipeline Execution**: Test a Jenkins pipeline without manually setting up a local Jenkins server.
+
 ## Prerequisites
 
 -   [Python 3.x](https://www.python.org/downloads/)
