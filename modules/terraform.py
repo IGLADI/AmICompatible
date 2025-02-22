@@ -116,4 +116,4 @@ def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
     finally:
         if old_handler is not None:
             signal.signal(signal.SIGINT, old_handler)
-        print("Command executed, keyboard interrupts restored.")
+            print("Command executed, keyboard interrupts restored.")

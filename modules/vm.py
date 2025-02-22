@@ -7,10 +7,10 @@ from . import jenkins, ssh, terraform
 
 
 def deploy_and_test_vm(terraform_dir, os_name, cfg, env, password=None, windows=False):
-    print(f"Deploying {os_name} VM")
-    terraform.init_and_apply(terraform_dir, os_name, env)
-
     try:
+        print(f"Deploying {os_name} VM")
+        terraform.init_and_apply(terraform_dir, os_name, env)
+
         print("Getting the public IP address...")
         ip = terraform.get_public_ip(terraform_dir, os_name)
 
