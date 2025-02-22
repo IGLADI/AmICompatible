@@ -72,6 +72,8 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
 
 AIC will install dependencies which might not come with the system. If your code uses these dependencies, it might work on AIC but not on a clean system. For example, Java will be installed by AIC but not present on a clean system.
 
+AIC handles interruptions as much as possible; however, Terraform can be very sensitive to them, so interruptions are still seriously discouraged and you should always check for any cloud resources left when doing so to avoid any unnecessary costs.
+
 ## How to Add Providers
 
 To add support for additional cloud providers or on-premises infrastructure, follow these steps:
