@@ -5,7 +5,7 @@ import shutil
 import string
 import subprocess
 
-from . import ansible, jenkins, ssh, terraform
+from . import ansible, jenkins, metrics, ssh, terraform
 
 
 def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
@@ -36,6 +36,7 @@ def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
 
 def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False):
     client = None
+    metrics_collector = None
 
     try:
         print(f"Deploying {os_name} VM")
@@ -59,10 +60,16 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
         print("Copying project files...")
         copy_project_files(client, ip, cfg["project_root"], password, windows)
 
+        metrics_collector = metrics.MetricsCollector(client, windows=windows)
+        metrics_collector.start()
+
         print("Running Jenkins pipeline...")
         jenkins.run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], password, windows)
     finally:
         print("Cleaning up...")
+        if metrics_collector:
+            metrics_results = metrics_collector.get_results()
+            print(f"Metrics for {os_name}: {metrics_results}")
         terraform.destroy(terraform_dir, os_name, env)
         if client:
             client.close()
