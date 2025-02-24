@@ -33,6 +33,8 @@ def main():
 
         # multithreading done with help of copilot
         # we have to use separate processes or keyboard interrupts won't be passed to the threads
+        # ignore interupts in the main thread
+        signal.signal(signal.SIGINT, ignore_interrupt)
         # permit to share data between processes
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
@@ -44,8 +46,6 @@ def main():
                         os_name, result = future.result()
                         results[os_name] = result
                 except KeyboardInterrupt:
-                    signal.signal(signal.SIGINT, ignore_interrupt)
-
                     interrupt.value = True
 
                     print("Gracefully terminating... No new deployments will be started.")
