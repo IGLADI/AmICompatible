@@ -4,7 +4,7 @@
 
 ## Overview
 
-AmICompatible (AIC) is a tool designed to help you test the compatibility of your software across different platforms. Whether you already have a Jenkins pipeline in place or prefer to start with a simple Jenkinsfile that runs your script, AIC can help you quickly identify any compatibility issues with your software.
+AmICompatible (AIC) is a tool designed to help you test the compatibility of your software across different platforms. Whether you already have a [Jenkins](https://www.jenkins.io) pipeline in place or prefer to start with a simple [Jenkinsfile](https://www.jenkins.io/doc/pipeline/tour/hello-world/) that runs your script, AIC can help you quickly identify any compatibility issues with your software.
 
 ## Use Cases
 

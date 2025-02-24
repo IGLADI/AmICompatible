@@ -1,5 +1,5 @@
 # based on copilot creating a base workflow
-name: Test UFW
+name: Test
 
 on:
     push:
