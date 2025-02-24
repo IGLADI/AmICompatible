@@ -8,11 +8,15 @@ import subprocess
 from . import ansible, jenkins, metrics, ssh, terraform
 
 
+def ignore_interrupt(signum, frame):
+    pass
+
+
 def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
     try:
         # due to raising condition the main thread can not have the time to cancel the futures
         if interrupt.value:
-            raise KeyboardInterrupt("No new deployments will be started.")
+            return os_name, "cancelled"
 
         env = os.environ.copy()
 

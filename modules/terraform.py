@@ -2,7 +2,6 @@ import re
 import signal
 import subprocess
 import sys
-import threading
 
 
 # create all needed cloud resources
@@ -80,10 +79,7 @@ def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
                 print("Subsequent Ctrl+C ignored.")
 
     first_interrupt = True
-    if threading.current_thread() is threading.main_thread():
-        old_handler = signal.signal(signal.SIGINT, handler)
-    else:
-        old_handler = None
+    old_handler = signal.signal(signal.SIGINT, handler)
 
     try:
         proc = subprocess.Popen(
@@ -114,6 +110,5 @@ def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
 
         return proc.returncode
     finally:
-        if old_handler is not None:
-            signal.signal(signal.SIGINT, old_handler)
-            print("Command executed, keyboard interrupts restored.")
+        signal.signal(signal.SIGINT, old_handler)
+        print("Command executed, keyboard interrupts restored.")

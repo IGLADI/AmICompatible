@@ -7,8 +7,14 @@ import sys
 from modules import config, ssh, vm
 
 
-def ignore_interrupt(signum, frame):
-    pass
+def ignore_interrupt(signum, frame, interrupt, executor, results, cfg):
+    interrupt.value = True
+
+    print("Gracefully terminating... No new deployments will be started.")
+
+    for os_name in cfg["os"]:
+        if os_name not in results:
+            results[os_name] = "cancelled"
 
 
 def main():
@@ -36,24 +42,16 @@ def main():
         # permit to share data between processes
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
+            # ignore interupts in the main thread
+            signal.signal(signal.SIGINT, lambda signum, frame: ignore_interrupt(signum, frame, interrupt, executor, results, cfg))
             # separate processes else the keyboard interrupt will not be passed to the threads
             with concurrent.futures.ProcessPoolExecutor(cfg["max_threads"]) as executor:
                 future_to_os = {executor.submit(vm.deploy_and_test, os_name, cfg, terraform_dir, interrupt): os_name for os_name in cfg["os"]}
-                try:
-                    for future in concurrent.futures.as_completed(future_to_os):
+                for future in concurrent.futures.as_completed(future_to_os):
+                    # prevent to store errors on cancelled deployments
+                    if not interrupt.value:
                         os_name, result = future.result()
                         results[os_name] = result
-                except KeyboardInterrupt:
-                    signal.signal(signal.SIGINT, ignore_interrupt)
-
-                    interrupt.value = True
-
-                    print("Gracefully terminating... No new deployments will be started.")
-                    executor.shutdown(cancel_futures=True)
-
-                    for os_name in cfg["os"]:
-                        if os_name not in results:
-                            results[os_name] = "cancelled"
 
         print("\nTest Results:")
         for os_name, result in results.items():
