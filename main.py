@@ -7,10 +7,8 @@ import sys
 from modules import config, ssh, vm
 
 
-def ignore_interrupt(signum, frame, interrupt, executor, results, cfg):
+def ignore_interrupt(signum, frame, interrupt, results, cfg):
     interrupt.value = True
-
-    print("Gracefully terminating... No new deployments will be started.")
 
     for os_name in cfg["os"]:
         if os_name not in results:
@@ -36,6 +34,7 @@ def main():
                 sys.exit(1)
 
         results = {}
+        metrics_results = {}
 
         # multithreading done with help of copilot
         # we have to use separate processes or keyboard interrupts won't be passed to the threads
@@ -43,19 +42,25 @@ def main():
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
             # ignore interupts in the main thread
-            signal.signal(signal.SIGINT, lambda signum, frame: ignore_interrupt(signum, frame, interrupt, executor, results, cfg))
+            signal.signal(signal.SIGINT, lambda signum, frame: ignore_interrupt(signum, frame, interrupt, results, cfg))
             # separate processes else the keyboard interrupt will not be passed to the threads
             with concurrent.futures.ProcessPoolExecutor(cfg["max_threads"]) as executor:
                 future_to_os = {executor.submit(vm.deploy_and_test, os_name, cfg, terraform_dir, interrupt): os_name for os_name in cfg["os"]}
                 for future in concurrent.futures.as_completed(future_to_os):
                     # prevent to store errors on cancelled deployments
                     if not interrupt.value:
-                        os_name, result = future.result()
-                        results[os_name] = result
+                        os_name, results[os_name], metrics_results[os_name] = future.result()
 
         print("\nTest Results:")
         for os_name, result in results.items():
-            print(f"{os_name}: {result}")
+            if result == "succeeded":
+                print(f"\033[92m{os_name}: {result}\033[0m")
+            elif result == "cancelled":
+                print(f"\033[93m{os_name}: {result}\033[0m")
+            else:
+                print(f"\033[91m{os_name}: {result}\033[0m")
+            if result == "succeeded":
+                print(f"Metrics for {os_name}: CPU Usage: {metrics_results[os_name][0]}, RAM Usage: {metrics_results[os_name][1]}")
 
         if all(result == "succeeded" for result in results.values()):
             sys.exit(0)

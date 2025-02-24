@@ -27,15 +27,15 @@ def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
         if "windows" in os_name.lower():
             password = generate_password()
             env["TF_VAR_password"] = password
-            deploy_vm_and_run_tests(f"{terraform_dir}/windows", os_name, cfg, env, password, windows=True)
+            metrics = deploy_vm_and_run_tests(f"{terraform_dir}/windows", os_name, cfg, env, password, windows=True)
         else:
-            deploy_vm_and_run_tests(f"{terraform_dir}/linux", os_name, cfg, env=env)
+            metrics = deploy_vm_and_run_tests(f"{terraform_dir}/linux", os_name, cfg, env=env)
 
         print(f"Deployment and test for {os_name} succeeded.")
-        return os_name, "succeeded"
+        return os_name, "succeeded", metrics
     except Exception as e:
         print(f"Deployment or test for {os_name} failed: {e}")
-        return os_name, f"failed: {e}"
+        return os_name, f"failed: {e}", None
 
 
 def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False):
@@ -73,10 +73,10 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
         print("Cleaning up...")
         if metrics_collector:
             metrics_results = metrics_collector.get_results()
-            print(f"Metrics for {os_name}: {metrics_results}")
         terraform.destroy(terraform_dir, os_name, env)
         if client:
             client.close()
+        return metrics_results
 
 
 def copy_project_files(client, ip, project_root, password=None, windows=False):
