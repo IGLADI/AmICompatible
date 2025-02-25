@@ -8,7 +8,7 @@ import subprocess
 from . import ansible, jenkins, metrics, ssh, terraform
 
 
-def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
+def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None) -> tuple:
     """
     Deploy a VM and run tests on it.
 
@@ -46,7 +46,7 @@ def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
         return os_name, f"failed: {e}", None
 
 
-def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False):
+def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False) -> tuple[list, list]:
     """
     Deploy a VM and run tests on it.
 
@@ -103,7 +103,7 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
             client.close()
 
 
-def copy_project_files(client, ip, project_root, password=None, windows=False):
+def copy_project_files(client, ip, project_root, password=None, windows=False) -> None:
     """
     Copy project files to the VM.
 
@@ -137,7 +137,7 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
         raise ValueError("Copy Project: This combination of arguments is not supported")
 
 
-def cleanup():
+def cleanup() -> None:
     """
     Clean up temporary files and directories.
     """
@@ -145,7 +145,7 @@ def cleanup():
         shutil.rmtree("temp")
 
 
-def generate_password():
+def generate_password() -> str:
     """
     Generate a password that meets Azure requirements.
 

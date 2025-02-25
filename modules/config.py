@@ -3,7 +3,7 @@ import os
 import yaml
 
 
-def load_config(path="aic.yml"):
+def load_config(path="aic.yml") -> dict:
     """
     Load configuration from a YAML file.
 
@@ -14,7 +14,7 @@ def load_config(path="aic.yml"):
         return yaml.safe_load(config)
 
 
-def setup_terraform_vars(config):
+def setup_terraform_vars(config) -> None:
     """
     Set up Terraform environment variables.
 

@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int = 1):
+def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int = 1) -> None:
     """
     Initialize and apply Terraform configuration.
 
@@ -43,7 +43,7 @@ def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int
     raise Exception("Max retries reached. Terraform apply failed.")
 
 
-def get_public_ip(terraform_dir: str, os_name: str):
+def get_public_ip(terraform_dir: str, os_name: str) -> str:
     """
     Get the public IP address of the deployed VM.
 
@@ -69,7 +69,7 @@ def get_public_ip(terraform_dir: str, os_name: str):
 
 
 # destroy any resource made by terraform to limit costs while not in use
-def destroy(terraform_dir: str, os_name: str, env: dict):
+def destroy(terraform_dir: str, os_name: str, env: dict) -> None:
     """
     Destroy Terraform resources to limit costs.
 
@@ -90,7 +90,7 @@ def destroy(terraform_dir: str, os_name: str, env: dict):
 
 
 # w help of chatgpt for signal module
-def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
+def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs) -> int:
     """
     Execute a terraform command safely, handling keyboard interrupts.
 

@@ -5,7 +5,7 @@ import time
 from . import ssh
 
 
-def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, windows=False):
+def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, windows=False) -> None:
     """
     Run the Jenkins pipeline.
 
@@ -94,7 +94,7 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, window
         raise RuntimeError("Jenkins pipeline failed. This is not an AIC error. Check the logs for more information.") from e
 
 
-def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows):
+def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows) -> None:
     """
     Install Jenkins plugins.
 
@@ -125,7 +125,7 @@ def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root,
         print("No Jenkins plugins file found. Skipping plugin installation.")
 
 
-def wait_jenkins(client, wait_time=10, max_retries=5):
+def wait_jenkins(client, wait_time=10, max_retries=5) -> None:
     """
     Wait for Jenkins to come back up.
 

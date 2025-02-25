@@ -7,7 +7,7 @@ import sys
 from modules import config, metrics, ssh, vm
 
 
-def handler(interrupt, results, cfg):
+def handler(interrupt, results, cfg) -> None:
     """
     Handle interrupt signals.
 
