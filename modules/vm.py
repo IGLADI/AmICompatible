@@ -69,14 +69,16 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
 
         print("Running Jenkins pipeline...")
         jenkins.run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], password, windows)
+
+        metrics_results = metrics_collector.get_results()
+        return metrics_results
     finally:
         print("Cleaning up...")
         if metrics_collector:
-            metrics_results = metrics_collector.get_results()
+            metrics_results = metrics_collector.stop()
         terraform.destroy(terraform_dir, os_name, env)
         if client:
             client.close()
-        return metrics_results
 
 
 def copy_project_files(client, ip, project_root, password=None, windows=False):
