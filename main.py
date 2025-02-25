@@ -7,7 +7,15 @@ import sys
 from modules import config, metrics, ssh, vm
 
 
-def ignore_interrupt(signum, frame, interrupt, results, cfg):
+def handler(interrupt, results, cfg):
+    """
+    Handle interrupt signals.
+
+    Args:
+        interrupt: Shared value across processes to handle interrupts.
+        results: Dictionary to store results.
+        cfg: Configuration dictionary.
+    """
     interrupt.value = True
 
     for os_name in cfg["os"]:
@@ -42,7 +50,7 @@ def main():
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
             # ignore interupts in the main thread
-            signal.signal(signal.SIGINT, lambda signum, frame: ignore_interrupt(signum, frame, interrupt, results, cfg))
+            signal.signal(signal.SIGINT, lambda signum, frame: handler(interrupt, results, cfg))
             # separate processes else the keyboard interrupt will not be passed to the threads
             with concurrent.futures.ProcessPoolExecutor(cfg["max_threads"]) as executor:
                 future_to_os = {executor.submit(vm.deploy_and_test, os_name, cfg, terraform_dir, interrupt): os_name for os_name in cfg["os"]}

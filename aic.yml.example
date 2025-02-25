@@ -1,16 +1,16 @@
+# Cloud provider to use, currently only Azure is supported
 platform: azure
-#  Your Azure subscription ID
+# Your Azure subscription ID
 subscription_id: <subscription_id>
-#  From service principal output
+# From service principal output
 appId: <appId>
-#  From service principal output (password)
+# From service principal output (password)
 client_secret: <client_secret>
-#  From service principal output
+# From service principal output
 tenant_id: <tenant_id>
-# max simultaneous test to run
-# if left empty, AIC will use the number of cores on your machine
-max_threads: 3
-# uncomment all platforms you want to test on
+# max simultaneous test to run (if left empty it will run all at once)
+max_threads: 99
+# list of OS to test on (uncomment the ones you want to test)
 os:
     # - WindowsServer-2025-datacenter
     # - WindowsServer-2022-datacenter

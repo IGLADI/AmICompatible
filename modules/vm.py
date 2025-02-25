@@ -8,11 +8,19 @@ import subprocess
 from . import ansible, jenkins, metrics, ssh, terraform
 
 
-def ignore_interrupt(signum, frame):
-    pass
-
-
 def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
+    """
+    Deploy a VM and run tests on it.
+
+    Args:
+        os_name: Name of the operating system.
+        cfg: Configuration dictionary.
+        terraform_dir: Directory containing Terraform files.
+        interrupt: Shared value across processes to handle interrupts.
+
+    Returns:
+        OS name, status, and metrics.
+    """
     try:
         # due to raising condition the main thread can not have the time to cancel the futures
         if interrupt.value:
@@ -39,6 +47,20 @@ def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None):
 
 
 def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False):
+    """
+    Deploy a VM and run tests on it.
+
+    Args:
+        terraform_dir: Directory containing Terraform files.
+        os_name: Name of the operating system.
+        cfg: Configuration dictionary.
+        env: Environment variables.
+        password: Password for the VM.
+        windows : Whether the VM is a Windows VM.
+
+    Returns:
+        Metrics results.
+    """
     client = None
     metrics_collector = None
 
@@ -68,7 +90,7 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
         metrics_collector.start()
 
         print("Running Jenkins pipeline...")
-        jenkins.run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], password, windows)
+        jenkins.run_jenkins_pipeline(client, cfg["jenkins_file"], cfg["plugin_file"], cfg["project_root"], windows)
 
         metrics_results = metrics_collector.get_results()
         return metrics_results
@@ -82,6 +104,19 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
 
 
 def copy_project_files(client, ip, project_root, password=None, windows=False):
+    """
+    Copy project files to the VM.
+
+    Args:
+        client: SSH client connected to the VM.
+        ip: IP address of the VM.
+        project_root: Root directory of the project.
+        password: Password for the VM.
+        windows: Whether the VM a Windows VM.
+
+    Raises:
+        ValueError: If the combination of arguments is not supported.
+    """
     if password and windows:
         # scp does not support password auth OOTB so we use sshpass to automate the password input
         # for windows path check out https://stackoverflow.com/questions/10235778/scp-from-linux-to-windows
@@ -103,11 +138,20 @@ def copy_project_files(client, ip, project_root, password=None, windows=False):
 
 
 def cleanup():
+    """
+    Clean up temporary files and directories.
+    """
     if os.path.exists("temp"):
         shutil.rmtree("temp")
 
 
 def generate_password():
+    """
+    Generate a password that meets Azure requirements.
+
+    Returns:
+        Generated password.
+    """
     while True:
         password = secrets.token_urlsafe(32)
         # check if it fulfills the azure password requirements (made with help of copilot)

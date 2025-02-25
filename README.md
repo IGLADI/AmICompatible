@@ -1,4 +1,4 @@
-<!-- Disclaimer: This README has been made w help of AI -->
+<!-- Disclaimer: This README has been made w help of AI as well as a lot of documentation in the code -->
 
 # AmICompatible
 

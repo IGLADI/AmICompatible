@@ -4,9 +4,19 @@ import subprocess
 import sys
 
 
-# create all needed cloud resources
-# we have set the retries to 1 now we know the issue and fix
 def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int = 1):
+    """
+    Initialize and apply Terraform configuration.
+
+    Args:
+        terraform_dir: Directory containing Terraform files.
+        os_name: Name of the operating system.
+        env: Environment variables.
+        max_retries: Maximum number of retries.
+
+    Raises:
+        Exception: If maximum retries are reached and Terraform apply fails.
+    """
     env["TF_VAR_os"] = os_name
     if "arm" in os_name.lower():
         env["TF_VAR_arm"] = "true"
@@ -34,6 +44,19 @@ def init_and_apply(terraform_dir: str, os_name: str, env: dict, max_retries: int
 
 
 def get_public_ip(terraform_dir: str, os_name: str):
+    """
+    Get the public IP address of the deployed VM.
+
+    Args:
+        terraform_dir: Directory containing Terraform files.
+        os_name: Name of the operating system.
+
+    Returns:
+        Public IP address.
+
+    Raises:
+        ValueError: If the IP address cannot be found in Terraform output.
+    """
     result = subprocess.run(
         f"terraform output -state={os_name}.tfstate public_ip", shell=True, cwd=terraform_dir, check=True, capture_output=True, text=True
     )
@@ -47,6 +70,14 @@ def get_public_ip(terraform_dir: str, os_name: str):
 
 # destroy any resource made by terraform to limit costs while not in use
 def destroy(terraform_dir: str, os_name: str, env: dict):
+    """
+    Destroy Terraform resources to limit costs.
+
+    Args:
+        terraform_dir: Directory containing Terraform files.
+        os_name: Name of the operating system.
+        env: Environment variables.
+    """
     # this will send a deprecated warning as it's a legacy feature, however no new replacement seem to be valid for this edge case
     # see https://developer.hashicorp.com/terraform/language/backend/local
     execute_safely(
@@ -60,6 +91,17 @@ def destroy(terraform_dir: str, os_name: str, env: dict):
 
 # w help of chatgpt for signal module
 def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs):
+    """
+    Execute a terraform command safely, handling keyboard interrupts.
+
+    Args:
+        ignore_all_interrupts: Whether to ignore all keyboard interrupts or only pass the first one.
+        env: Environment variables.
+
+    Raises:
+        KeyboardInterrupt: If the command is interrupted.
+        subprocess.CalledProcessError: If the command fails.
+    """
     if ignore_all_interrupts:
         print("Executing critical terraform command, ignoring all keyboard interrupts...")
     else:

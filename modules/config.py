@@ -3,12 +3,24 @@ import os
 import yaml
 
 
-def load_config():
-    with open("aic.yml") as config:
+def load_config(path="aic.yml"):
+    """
+    Load configuration from a YAML file.
+
+    Returns:
+        dict: Configuration dictionary.
+    """
+    with open(path) as config:
         return yaml.safe_load(config)
 
 
 def setup_terraform_vars(config):
+    """
+    Set up Terraform environment variables.
+
+    Args:
+        config: Configuration dictionary.
+    """
     env_vars = {
         "TF_VAR_subscription_id": config["subscription_id"],
         "TF_VAR_tenant_id": config["tenant_id"],

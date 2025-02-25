@@ -5,7 +5,17 @@ import time
 from . import ssh
 
 
-def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, password=None, windows=False):
+def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, windows=False):
+    """
+    Run the Jenkins pipeline.
+
+    Args:
+        client: SSH client connected to the VM.
+        jenkins_file: Path to the Jenkins file base on the project root.
+        plugin_file: Path to the Jenkins plugin file.
+        project_root: Root directory of the project.
+        windows: Whether the VM is a Windows VM.
+    """
     print("Getting Jenkins initial admin password...")
     # stderr has to be there even if we don't use it else stdout will contain a tuple
     if windows:
@@ -85,6 +95,16 @@ def run_jenkins_pipeline(client, jenkins_file, plugin_file, project_root, passwo
 
 
 def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root, windows):
+    """
+    Install Jenkins plugins.
+
+    Args:
+        client: SSH client connected to the VM.
+        jenkins_password: Jenkins admin password.
+        plugin_file: Path to the Jenkins plugin file.
+        project_root: Root directory of the project.
+        windows: Whether the VM is a Windows VM.
+    """
     if os.path.exists(os.path.join(project_root, plugin_file)):
         print("Installing Jenkins plugins...")
         with open(os.path.join(project_root, plugin_file), "r") as file:
@@ -106,6 +126,17 @@ def install_jenkins_plugins(client, jenkins_password, plugin_file, project_root,
 
 
 def wait_jenkins(client, wait_time=10, max_retries=5):
+    """
+    Wait for Jenkins to come back up.
+
+    Args:
+        client: SSH client connected to the VM.
+        wait_time: Time to wait between retries.
+        max_retries: Maximum number of retries.
+
+    Raises:
+        RuntimeError: If Jenkins does not come back up within the maximum retries.
+    """
     print("Waiting for Jenkins to come back up...")
     for retry in range(1, max_retries + 1):
         try:
