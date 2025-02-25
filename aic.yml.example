@@ -26,6 +26,8 @@ os:
     # - LinuxRocky9
     # - LinuxAlma9
     # - LinuxOracle9
+    # - LinuxSuse15
+    # - LinuxSuse15-ARM
 # prefix to all resources groups
 rg_prefix: AIC
 # region to run the VMs in

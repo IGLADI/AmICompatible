@@ -14,6 +14,8 @@
         ansible.builtin.win_file:
             path: 'C:\Users\aic\Downloads'
             state: directory
+        retries: 10
+        delay: 10
 
       # msi are sadly non declarative, this is fine for this project but I would not recommend using this outside of just created vm's
       - name: Download Java MSI
@@ -21,9 +23,13 @@
             url: "https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.msi"
             dest: "C:\\Users\\aic\\Downloads\\jdk-21_windows-x64_bin"
             method: GET
+        retries: 10
+        delay: 10
 
       - name: Install Java
         ansible.builtin.win_command: 'msiexec.exe /i "C:\Users\aic\Downloads\jdk-21_windows-x64_bin" /qn /norestart'
+        retries: 10
+        delay: 10
 
       - name: Add Java to Path
         ansible.builtin.win_environment:
@@ -32,16 +38,22 @@
             state: present
             # machine level does not work for some reason but user is fine as the whole project runs with the same user
             level: user
+        retries: 10
+        delay: 10
 
       - name: Download Jenkins MSI
         win_uri:
             url: "https://get.jenkins.io/windows-stable/2.492.1/jenkins.msi"
             dest: "C:\\Users\\aic\\Downloads\\jenkins.msi"
             method: GET
+        retries: 10
+        delay: 10
 
       - name: Install Jenkins
         # jenkins does not auto find java on some windows machines so we parse the default java path
         ansible.builtin.win_command: 'msiexec.exe /i "C:\Users\aic\Downloads\jenkins.msi" /qn /norestart JAVA_HOME="C:\Program Files\Java\jdk-21"'
+        retries: 10
+        delay: 10
 
       - name: Download Jenkins CLI
         win_get_url:
@@ -55,4 +67,5 @@
         ansible.builtin.win_file:
             path: 'C:\\Windows\\system32\\config\\systemprofile\\AppData\\Local\\Jenkins\\.jenkins\\workspace\\aic_job'
             state: directory
-
+        retries: 10
+        delay: 10

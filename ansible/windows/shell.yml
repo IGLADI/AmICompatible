@@ -12,6 +12,10 @@
             data: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
             type: string
             state: present
+        retries: 10
+        delay: 10
 
       - name: reset SSH connection after shell change
         ansible.builtin.meta: reset_connection
+        retries: 10
+        delay: 10

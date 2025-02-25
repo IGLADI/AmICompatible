@@ -11,6 +11,8 @@
             url: "https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key"
             dest: "/usr/share/keyrings/jenkins-keyring.asc"
             mode: "0644"
+        retries: 10
+        delay: 10
         when: ansible_facts['os_family'] == 'Debian'
 
       - name: Add Jenkins apt repo (Debian/Ubuntu)
@@ -18,23 +20,48 @@
             content: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
             dest: /etc/apt/sources.list.d/jenkins.list
             mode: "0644"
+        retries: 10
+        delay: 10
         when: ansible_facts['os_family'] == 'Debian'
 
       - name: Add Jenkins repo (RHEL/Fedora)
         get_url:
             url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
             dest: /etc/yum.repos.d/jenkins.repo
+        retries: 10
+        delay: 10
         when: ansible_facts['os_family'] == 'RedHat'
+
+      - name: Add Jenkins repository
+        zypper_repository:
+            name: jenkins
+            repo: https://pkg.jenkins.io/opensuse-stable/
+            auto_import_keys: yes
+            state: present
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] == 'Suse'
 
       - name: Import Jenkins key (RHEL/Fedora)
         rpm_key:
             state: present
             key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        retries: 10
+        delay: 10
         when: ansible_facts['os_family'] == 'RedHat'
 
       - name: Update cache
         package:
             update_cache: yes
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] != 'Suse'
+
+      - name: Update cache (SUSE)
+        command: zypper refresh
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] == 'Suse'
 
       - name: Install Java (Debian/Ubuntu)
         package:
@@ -43,31 +70,59 @@
                 - openjdk-17-jre
                 - openjdk-17-jdk
             state: present
+        retries: 10
+        delay: 10
         when: ansible_facts['os_family'] == "Debian"
 
-      - name: Install Java (RHEL/Fedora)
+      - name: Install Java (RHEL/Fedora/SUSE)
         package:
             name:
                 - java-17-openjdk
                 - java-17-openjdk-devel
             state: present
-        when: ansible_facts['os_family'] == "RedHat"
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] != "Debian"
 
       - name: Install Jenkins
         package:
             name: jenkins
             state: present
+        retries: 10
+        delay: 10
 
-      - name: Reload systemd daemon (RHEL/Fedora)
+      - name: Reload systemd daemon (RHEL/Fedora/SUSE)
         systemd:
             daemon_reload: yes
-        when: ansible_facts['os_family'] == 'RedHat'
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] != 'Debian'
+
+      - name: Create rc3.d directory (SUSE)
+        file:
+            path: /etc/init.d/rc3.d
+            state: directory
+            mode: "0755"
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] == 'Suse'
+
+      - name: Create rc5.d directory (SUSE)
+        file:
+            path: /etc/init.d/rc5.d
+            state: directory
+            mode: "0755"
+        retries: 10
+        delay: 10
+        when: ansible_facts['os_family'] == 'Suse'
 
       - name: Start Jenkins service
         systemd:
             name: jenkins
             state: started
             enabled: yes
+        retries: 10
+        delay: 10
 
       - name: Download Jenkins CLI
         get_url:
@@ -81,9 +136,13 @@
         file:
             path: "/home/aic/jenkins-cli.jar"
             mode: "0755"
+        retries: 10
+        delay: 10
 
       - name: Create Jenkins workspace directory
         file:
             path: /var/lib/jenkins/workspace/aic_job
             state: directory
             mode: "0755"
+        retries: 10
+        delay: 10

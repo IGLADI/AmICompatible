@@ -114,6 +114,8 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRocky9                     = "resf"
       LinuxAlma9                      = "almalinux"
       LinuxOracle9                    = "oracle"
+      LinuxSuse15                     = "suse"
+      LinuxSuse15-ARM                 = "suse"
     }, var.os)
     offer = lookup({
       LinuxUbuntuServer_24_04-LTS     = "ubuntu-24_04-lts"
@@ -126,6 +128,8 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRocky9                     = "rockylinux-x86_64"
       LinuxAlma9                      = "almalinux-x86_64"
       LinuxOracle9                    = "oracle-linux"
+      LinuxSuse15                     = "sles-15-sp5-basic"
+      LinuxSuse15-ARM                 = "sles-15-sp6-arm64"
     }, var.os)
     sku = lookup({
       LinuxUbuntuServer_24_04-LTS     = "server"
@@ -138,6 +142,8 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRocky9                     = "9-base"
       LinuxAlma9                      = "9-gen1"
       LinuxOracle9                    = "ol94-lvm"
+      LinuxSuse15                     = "gen2"
+      LinuxSuse15-ARM                 = "gen2"
     }, var.os)
     version = "latest"
   }
