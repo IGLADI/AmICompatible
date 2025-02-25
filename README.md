@@ -265,3 +265,7 @@ If you encounter an Azure limitation, for example `PublicIPCountLimitReached` tr
 ### Windows SSH Extension Issues
 
 The extension has a timeout of ~3 minutes to setup ssh, if you encounter any issues with the extension, try increasing `vm_size` in `aic.yml`.
+
+### OSError: Too many open files
+
+If you encounter the error `OSError: [Errno 24] Too many open files`, try decreasing `max_threads` in `aic.yml`.

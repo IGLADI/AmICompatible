@@ -1,7 +1,29 @@
 import threading
 import time
 
+import plotext
+
 from . import ssh
+
+
+def display_metrics(results, metrics_results):
+    plotext.theme("dark")
+    plotext.plotsize(plotext.terminal_width(), 20)
+    for os_name, result in results.items():
+        if result == "succeeded":
+            cpu_usage, ram_usage = metrics_results[os_name]
+
+            # space between each os
+            print("")
+            plotext.clear_data()
+            # for some reason this is considered data so we need to reset it after each data clear
+            plotext.ylim(0, 100)
+            plotext.plot(cpu_usage, label="CPU Usage")
+            plotext.plot(ram_usage, label="RAM Usage")
+            plotext.xlabel("Time (s)")
+            plotext.ylabel("Usage (%)")
+            plotext.title(f"Resource Usage on {os_name}")
+            plotext.show()
 
 
 class MetricsCollector:

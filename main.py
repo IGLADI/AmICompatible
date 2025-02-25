@@ -4,7 +4,7 @@ import os
 import signal
 import sys
 
-from modules import config, ssh, vm
+from modules import config, metrics, ssh, vm
 
 
 def ignore_interrupt(signum, frame, interrupt, results, cfg):
@@ -51,7 +51,10 @@ def main():
                     if not interrupt.value:
                         os_name, results[os_name], metrics_results[os_name] = future.result()
 
-        print("\nTest Results:")
+        print("Metrics:")
+        metrics.display_metrics(results, metrics_results)
+
+        print("Test Results:")
         for os_name, result in results.items():
             if result == "succeeded":
                 print(f"\033[92m{os_name}: {result}\033[0m")
@@ -59,8 +62,6 @@ def main():
                 print(f"\033[93m{os_name}: {result}\033[0m")
             else:
                 print(f"\033[91m{os_name}: {result}\033[0m")
-            if result == "succeeded":
-                print(f"Metrics for {os_name}: CPU Usage: {metrics_results[os_name][0]}, RAM Usage: {metrics_results[os_name][1]}")
 
         if all(result == "succeeded" for result in results.values()):
             sys.exit(0)
