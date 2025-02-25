@@ -111,9 +111,13 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRhel9                      = "RedHat"
       LinuxRhel9-ARM                  = "RedHat"
       LinuxFedora41                   = "ntegralinc1586961136942"
+      LinuxFedora41-ARM               = "askforcloudllc1651766049149"
       LinuxRocky9                     = "resf"
+      LinuxRocky8-ARM                 = "ntegralinc1586961136942"
       LinuxAlma9                      = "almalinux"
+      LinuxAlma9-ARM                  = "almalinux"
       LinuxOracle9                    = "oracle"
+      LinuxOracle9-ARM                = "oracle"
       LinuxSuse15                     = "suse"
       LinuxSuse15-ARM                 = "suse"
     }, var.os)
@@ -125,9 +129,13 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRhel9                      = "RHEL"
       LinuxRhel9-ARM                  = "rhel-arm64"
       LinuxFedora41                   = "ntg_fedora_41"
+      LinuxFedora41-ARM               = "fedora-41-arm-aarch64"
       LinuxRocky9                     = "rockylinux-x86_64"
+      LinuxRocky8-ARM                 = "ntg_rocky_8_10_arm64"
       LinuxAlma9                      = "almalinux-x86_64"
+      LinuxAlma9-ARM                  = "almalinux-arm"
       LinuxOracle9                    = "oracle-linux"
+      LinuxOracle9-ARM                = "oracle-linux"
       LinuxSuse15                     = "sles-15-sp5-basic"
       LinuxSuse15-ARM                 = "sles-15-sp6-arm64"
     }, var.os)
@@ -139,9 +147,13 @@ resource "azurerm_linux_virtual_machine" "main" {
       LinuxRhel9                      = "90-gen2"
       LinuxRhel9-ARM                  = "9_5-arm64"
       LinuxFedora41                   = "ntg_fedora_41"
+      LinuxFedora41-ARM               = "fedora-41-arm-aarch64"
       LinuxRocky9                     = "9-base"
+      LinuxRocky8-ARM                 = "ntg_rocky_8_10_arm64"
       LinuxAlma9                      = "9-gen1"
+      LinuxAlma9-ARM                  = "9-arm-gen2"
       LinuxOracle9                    = "ol94-lvm"
+      LinuxOracle9-ARM                = "ol94-arm64-lvm-gen2"
       LinuxSuse15                     = "gen2"
       LinuxSuse15-ARM                 = "gen2"
     }, var.os)
@@ -152,8 +164,10 @@ resource "azurerm_linux_virtual_machine" "main" {
   # w help of chatGPT for dynamic block
   dynamic "plan" {
     for_each = lookup({
-      LinuxRocky9   = [{ name = "9-base", product = "rockylinux-x86_64", publisher = "resf" }]
-      LinuxFedora41 = [{ name = "ntg_fedora_41", product = "ntg_fedora_41", publisher = "ntegralinc1586961136942" }]
+      LinuxRocky9       = [{ name = "9-base", product = "rockylinux-x86_64", publisher = "resf" }]
+      LinuxRocky8-ARM   = [{ name = "ntg_rocky_8_10_arm64", product = "ntg_rocky_8_10_arm64", publisher = "ntegralinc1586961136942" }]
+      LinuxFedora41     = [{ name = "ntg_fedora_41", product = "ntg_fedora_41", publisher = "ntegralinc1586961136942" }]
+      LinuxFedora41-ARM = [{ name = "fedora-41-arm-aarch64", product = "fedora-41-arm-aarch64", publisher = "askforcloudllc1651766049149" }]
     }, var.os, [])
 
     content {

@@ -23,9 +23,13 @@ os:
     # - LinuxRhel9
     # - LinuxRhel9-ARM
     # - LinuxFedora41
+    # - LinuxFedora41-ARM
     # - LinuxRocky9
+    # - LinuxRocky8-ARM
     # - LinuxAlma9
+    # - LinuxAlma9-ARM
     # - LinuxOracle9
+    # - LinuxOracle9-ARM
     # - LinuxSuse15
     # - LinuxSuse15-ARM
 # prefix to all resources groups
