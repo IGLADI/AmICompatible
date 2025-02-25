@@ -16,7 +16,9 @@ def create_ssh_key() -> None:
     subprocess.run("ssh-keygen -t rsa -b 4096 -f ./temp/id_rsa -N '' -q", shell=True, check=True)
 
 
-def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 10, password=None, key_path="./temp/id_rsa") -> paramiko.SSHClient | None:
+def connect_to_vm(
+    ip: str, max_retries: int = 10, delay: int = 10, password: str | None = None, key_path: str = "./temp/id_rsa"
+) -> paramiko.SSHClient | None:
     """
     Connect to a VM via SSH.
 
@@ -52,7 +54,7 @@ def connect_to_vm(ip: str, max_retries: int = 10, delay: int = 10, password=None
                 time.sleep(delay)
 
 
-def execute_ssh_command(client, command: str, print_output: bool = True) -> tuple:
+def execute_ssh_command(client: paramiko.SSHClient, command: str, print_output: bool = True) -> tuple:
     """
     Execute an SSH command on the VM.
 

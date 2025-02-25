@@ -1,7 +1,7 @@
 import subprocess
 
 
-def create_ansible_inventory(ip, os_name, password=None, powershell=False, windows=False) -> None:
+def create_ansible_inventory(ip: str, os_name: str, password: str | None = None, powershell: bool = False, windows: bool = False) -> None:
     if password and windows:
         if powershell:
             inventory = f"{ip} ansible_user=aic ansible_password={password} ansible_ssh_common_args='-o StrictHostKeyChecking=no' ansible_remote_tmp='C:\\Windows\\Temp' ansible_shell_type=powershell ansible_python_interpreter=none"
@@ -15,7 +15,7 @@ def create_ansible_inventory(ip, os_name, password=None, powershell=False, windo
         ini.write(inventory)
 
 
-def download_remote_dependency(os_name, password=None, windows=False, ip=None) -> None:
+def download_remote_dependency(os_name: str, password: str | None = None, windows: bool = False, ip: str | None = None) -> None:
     print("Creating Ansible inventory...")
     create_ansible_inventory(ip, os_name, password, windows=windows)
 

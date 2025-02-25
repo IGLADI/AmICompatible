@@ -7,7 +7,7 @@ import sys
 from modules import config, metrics, ssh, vm
 
 
-def handler(interrupt, results, cfg) -> None:
+def handler(interrupt: multiprocessing.Value, results: dict, cfg: dict) -> None:  # type: ignore
     """
     Handle interrupt signals.
 
@@ -23,7 +23,7 @@ def handler(interrupt, results, cfg) -> None:
             results[os_name] = "cancelled"
 
 
-def main():
+def main() -> None:
     try:
         cfg = config.load_config()
         config.setup_terraform_vars(cfg)

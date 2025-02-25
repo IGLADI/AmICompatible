@@ -1,14 +1,18 @@
+import multiprocessing
 import os
 import random
 import secrets
 import shutil
 import string
 import subprocess
+from typing import Optional
+
+import paramiko
 
 from . import ansible, jenkins, metrics, ssh, terraform
 
 
-def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None) -> tuple:
+def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, interrupt: Optional[multiprocessing.Value] = None) -> tuple:  # type: ignore
     """
     Deploy a VM and run tests on it.
 
@@ -46,7 +50,9 @@ def deploy_and_test(os_name, cfg, terraform_dir, interrupt=None) -> tuple:
         return os_name, f"failed: {e}", None
 
 
-def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, windows=False) -> tuple[list, list]:
+def deploy_vm_and_run_tests(
+    terraform_dir: str, os_name: str, cfg: dict, env: dict, password: str | None = None, windows: bool = False
+) -> tuple[list, list]:
     """
     Deploy a VM and run tests on it.
 
@@ -103,7 +109,7 @@ def deploy_vm_and_run_tests(terraform_dir, os_name, cfg, env, password=None, win
             client.close()
 
 
-def copy_project_files(client, ip, project_root, password=None, windows=False) -> None:
+def copy_project_files(client: paramiko.SSHClient, ip: str, project_root: str, password: str | None = None, windows: bool = False) -> None:
     """
     Copy project files to the VM.
 

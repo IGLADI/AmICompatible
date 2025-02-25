@@ -1,12 +1,13 @@
 import threading
 import time
 
+import paramiko
 import plotext
 
 from . import ssh
 
 
-def display_metrics(results, metrics_results) -> None:
+def display_metrics(results: dict, metrics_results: dict) -> None:
     """
     Display metrics.
 
@@ -34,7 +35,7 @@ def display_metrics(results, metrics_results) -> None:
 
 
 class MetricsCollector:
-    def __init__(self, client, interval=1, windows=False) -> None:
+    def __init__(self, client: paramiko.SSHClient, interval: int = 1, windows: bool = False) -> None:
         """
         Initialize the MetricsCollector.
 

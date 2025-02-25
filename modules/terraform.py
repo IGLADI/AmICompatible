@@ -90,7 +90,7 @@ def destroy(terraform_dir: str, os_name: str, env: dict) -> None:
 
 
 # w help of chatgpt for signal module
-def execute_safely(*args, ignore_all_interrupts=False, env=None, **kwargs) -> int:
+def execute_safely(*args, ignore_all_interrupts: bool = False, env: dict | None = None, **kwargs) -> int:
     """
     Execute a terraform command safely, handling keyboard interrupts.
 
