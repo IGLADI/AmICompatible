@@ -50,24 +50,24 @@ resource "azurerm_windows_virtual_machine" "main" {
   source_image_reference {
     # see https://learn.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage#code-try-6
     publisher = lookup({
-      WindowsServer-2025-datacenter = "MicrosoftWindowsServer",
-      WindowsServer-2022-datacenter = "MicrosoftWindowsServer",
+      WindowsServer-2025-datacenter = "MicrosoftWindowsServer"
+      WindowsServer-2022-datacenter = "MicrosoftWindowsServer"
       # we do not support Windows Server 2019 as the ssh extension does not work with it
-      WindowsServer-2016-datacenter = "MicrosoftWindowsServer",
-      Windows11                     = "microsoftwindowsdesktop",
+      WindowsServer-2016-datacenter = "MicrosoftWindowsServer"
+      Windows11                     = "microsoftwindowsdesktop"
       # same as above, we do not support Windows 10 as the ssh extension does not work with it
     }, var.os)
     offer = lookup({
-      WindowsServer-2025-datacenter = "WindowsServer",
-      WindowsServer-2022-datacenter = "WindowsServer",
-      WindowsServer-2016-datacenter = "WindowsServer",
-      Windows11                     = "windows-11",
+      WindowsServer-2025-datacenter = "WindowsServer"
+      WindowsServer-2022-datacenter = "WindowsServer"
+      WindowsServer-2016-datacenter = "WindowsServer"
+      Windows11                     = "windows-11"
     }, var.os)
     sku = lookup({
-      WindowsServer-2025-datacenter = "2025-datacenter-azure-edition",
-      WindowsServer-2022-datacenter = "2022-datacenter-azure-edition",
-      WindowsServer-2016-datacenter = "2016-datacenter",
-      Windows11                     = "win11-22h2-entn",
+      WindowsServer-2025-datacenter = "2025-datacenter-azure-edition"
+      WindowsServer-2022-datacenter = "2022-datacenter-azure-edition"
+      WindowsServer-2016-datacenter = "2016-datacenter"
+      Windows11                     = "win11-22h2-entn"
     }, var.os)
     version = "latest"
   }

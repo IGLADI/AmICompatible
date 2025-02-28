@@ -68,7 +68,6 @@ def get_public_ip(terraform_dir: str, os_name: str) -> str:
     return match.group(0)
 
 
-# destroy any resource made by terraform to limit costs while not in use
 def destroy(terraform_dir: str, os_name: str, env: dict) -> None:
     """
     Destroy Terraform resources to limit costs.

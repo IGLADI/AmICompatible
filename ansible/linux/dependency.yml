@@ -32,7 +32,7 @@
         delay: 10
         when: ansible_facts['os_family'] == 'RedHat'
 
-      - name: Add Jenkins repository
+      - name: Add Jenkins repo (SUSE)
         zypper_repository:
             name: jenkins
             repo: https://pkg.jenkins.io/opensuse-stable/
@@ -66,7 +66,7 @@
       - name: Install Java (Debian/Ubuntu)
         package:
             name:
-                # debian does not come w openjdk 21 yet so we use 17 for all debian based systems
+                # debian does not come w openjdk 21 yet so we use 17
                 - openjdk-17-jre
                 - openjdk-17-jdk
             state: present

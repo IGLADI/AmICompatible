@@ -33,7 +33,7 @@ def main() -> None:
 
         # other providers can be added by creating new terraform directories
         # this is for futureproofness, currently only azure is supported
-        # we could also do this trough terraform variables, this will be chosen when we have more providers
+        # we could also do this trough terraform variables, this will be chosen when we add more providers
         match cfg["platform"]:
             case "azure":
                 terraform_dir = "./terraform/azure"
@@ -45,7 +45,6 @@ def main() -> None:
         metrics_results = {}
 
         # multithreading done with help of copilot
-        # we have to use separate processes or keyboard interrupts won't be passed to the threads
         # permit to share data between processes
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
@@ -65,6 +64,7 @@ def main() -> None:
         print("Test Results:")
         for os_name, result in results.items():
             if result == "succeeded":
+                # color coting the output done w help of chatgpt
                 print(f"\033[92m{os_name}: {result}\033[0m")
             elif result == "cancelled":
                 print(f"\033[93m{os_name}: {result}\033[0m")

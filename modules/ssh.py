@@ -7,7 +7,7 @@ import paramiko
 
 def create_ssh_key() -> None:
     """
-    Create a single-use SSH key.
+    Create a temporary SSH key.
     """
     # remove any previous key
     if os.path.exists("temp/id_rsa"):

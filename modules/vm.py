@@ -26,7 +26,7 @@ def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, interrupt: Opti
         OS name, status, and metrics.
     """
     try:
-        # due to raising condition the main thread can not have the time to cancel the futures
+        # due to racing condition the main thread can not have the time to cancel all the futures
         if interrupt.value:
             return os_name, "cancelled"
 
@@ -37,7 +37,7 @@ def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, interrupt: Opti
         env["TF_VAR_resource_group_name"] = resource_group_name
 
         if "windows" in os_name.lower():
-            password = generate_password()
+            password = generate_azure_password()
             env["TF_VAR_password"] = password
             metrics = deploy_vm_and_run_tests(f"{terraform_dir}/windows", os_name, cfg, env, password, windows=True)
         else:
@@ -151,7 +151,7 @@ def cleanup() -> None:
         shutil.rmtree("temp")
 
 
-def generate_password() -> str:
+def generate_azure_password() -> str:
     """
     Generate a password that meets Azure requirements.
 

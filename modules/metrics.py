@@ -9,7 +9,7 @@ from . import ssh
 
 def display_metrics(results: dict, metrics_results: dict) -> None:
     """
-    Display metrics.
+    Display metrics results in simple line graph.
 
     Args:
         results: Dictionary containing test results.
@@ -34,6 +34,7 @@ def display_metrics(results: dict, metrics_results: dict) -> None:
             print("")
 
 
+# we use a class just to easily stop the thread, this could be a different file too but it makes more sense create a module per scope/feature in this case
 class MetricsCollector:
     def __init__(self, client: paramiko.SSHClient, interval: int = 1, windows: bool = False) -> None:
         """

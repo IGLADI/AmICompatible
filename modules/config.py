@@ -5,10 +5,16 @@ import yaml
 
 def load_config(path: str = "aic.yml") -> dict:
     """
-    Load configuration from a YAML file.
+    Load and validate the configuration from a YAML file.
+
+    Args:
+        path: Path to the configuration YAML file.
 
     Returns:
-        dict: Configuration dictionary.
+        A dictionary containing the configuration.
+
+    Raises:
+        ValueError: If any required configuration key is missing or invalid.
     """
     with open(path) as config:
         config_dict = yaml.safe_load(config)
@@ -37,6 +43,9 @@ def load_config(path: str = "aic.yml") -> dict:
     if not isinstance(config_dict["max_threads"], int) and config_dict["max_threads"] is not None:
         raise ValueError("max_threads must be an integer or None.")
 
+    if not isinstance(config_dict["os"], list) or not all(isinstance(item, str) for item in config_dict["os"]):
+        raise ValueError("os must be a list of strings.")
+
     if not isinstance(config_dict["subscription_id"], str):
         raise ValueError("subscription_id must be a string.")
     if not isinstance(config_dict["appId"], str):
@@ -45,8 +54,6 @@ def load_config(path: str = "aic.yml") -> dict:
         raise ValueError("client_secret must be a string.")
     if not isinstance(config_dict["tenant_id"], str):
         raise ValueError("tenant_id must be a string.")
-    if not isinstance(config_dict["os"], list) or not all(isinstance(item, str) for item in config_dict["os"]):
-        raise ValueError("os must be a list of strings.")
     if not isinstance(config_dict["region"], str):
         raise ValueError("region must be a string.")
     if not isinstance(config_dict["vm_size"], str):
@@ -56,8 +63,9 @@ def load_config(path: str = "aic.yml") -> dict:
     if not isinstance(config_dict["rg_prefix"], str):
         raise ValueError("rg_prefix must be a string.")
 
-    if config_dict["platform"] != "azure":
-        raise ValueError("Currently, only 'azure' platform is supported.")
+    supported_platforms = ["azure"]
+    if config_dict["platform"] not in supported_platforms:
+        raise ValueError(f"Unsupported platform: {config_dict['platform']}. Supported platforms are: {', '.join(supported_platforms)}.")
 
     if not os.path.exists(config_dict["project_root"]):
         raise ValueError("project_root must be a valid path.")
