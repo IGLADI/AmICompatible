@@ -8,8 +8,8 @@ appId: <appId>
 client_secret: <client_secret>
 # From service principal output
 tenant_id: <tenant_id>
-# max simultaneous test to run (if left empty it will run all at once)
-max_threads: 99
+# max simultaneous test to run
+max_threads: 3
 # list of OS to test on (uncomment the ones you want to test)
 os:
     # - WindowsServer-2025-datacenter
@@ -53,3 +53,5 @@ jenkins_file: ./Jenkinsfile
 # curl -sSL "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=/*/*/shortName&wrapper=plugins" | perl -pe 's/.*?<shortName>([\w-]+).*?(<\/\w+>)+/\1\n/g'
 # if you do not have a Jenkins server, the plugins.txt file in the example folder should work for you
 plugin_file: ./plugins.txt
+# what log level to see printed in real time (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+log_level: INFO

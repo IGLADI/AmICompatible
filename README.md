@@ -49,6 +49,8 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
     az ad sp create-for-rbac --name "AIC" --role contributor --scopes /subscriptions/<subscription_id>
     ```
 
+    > **Note**: Alternatively, you can create the Service Principal through the [Azure Portal](https://portal.azure.com) if you prefer not to use the CLI.
+
 4. **Edit the configuration file as needed**
 
     Copy `aic.yml.example` to `aic.yml`:
@@ -269,3 +271,11 @@ The extension has a timeout of ~3 minutes to setup ssh, if you encounter any iss
 ### OSError: Too many open files
 
 If you encounter the error `OSError: [Errno 24] Too many open files`, try decreasing `max_threads` in `aic.yml`.
+
+### Jenkins pipeline failed. This is not an AIC error.
+
+Check the `jenkins.log` file inside the `aic_logs` folder. Navigate to the folder of the run you want, then the OS folder you want, and open `jenkins.log`. Typically, the information you are interested in will be at the end of the file.
+
+### Check Logs
+
+If you encounter any issues, checking the logs can provide more insight into what went wrong. Logs are typically stored in the `~/.aic_logs` directory, this can be changed in the `aic.yml` file. The logs contain ansi colors, you can use `cat` or other to interpret them, if you want to use vscode to read the logs we recommend the `Ansi Colors` extension.

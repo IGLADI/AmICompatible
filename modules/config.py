@@ -1,6 +1,9 @@
 import os
+from logging import Logger
 
 import yaml
+
+from .custom_logging import log
 
 
 def load_config(path: str = "aic.yml") -> dict:
@@ -34,6 +37,8 @@ def load_config(path: str = "aic.yml") -> dict:
         "project_root",
         "jenkins_file",
         "plugin_file",
+        "log_dir",
+        "log_level",
     ]
 
     for key in required_keys:
@@ -62,6 +67,8 @@ def load_config(path: str = "aic.yml") -> dict:
         raise ValueError("arm_vm_size must be a string.")
     if not isinstance(config_dict["rg_prefix"], str):
         raise ValueError("rg_prefix must be a string.")
+    if not isinstance(config_dict["log_dir"], str):
+        raise ValueError("log_dir must be a string.")
 
     supported_platforms = ["azure"]
     if config_dict["platform"] not in supported_platforms:
@@ -101,15 +108,21 @@ def load_config(path: str = "aic.yml") -> dict:
         if os_item not in os_list:
             raise ValueError(f"Invalid os: {os_item}")
 
+    log_levels = ["debug", "info", "warning", "error", "critical"]
+    if config_dict["log_level"].lower() not in log_levels:
+        raise ValueError(f"Invalid log_level: {config_dict['log_level']}. Supported log levels are: {', '.join(log_levels)}")
+
     return config_dict
 
 
-def setup_terraform_vars(config: dict) -> None:
+@log
+def setup_terraform_vars(config: dict, logger: Logger) -> None:
     """
     Set up Terraform environment variables.
 
     Args:
         config: Configuration dictionary.
+        logger: Logger instance for logging.
     """
     env_vars = {
         "TF_VAR_subscription_id": config["subscription_id"],
@@ -121,4 +134,9 @@ def setup_terraform_vars(config: dict) -> None:
         "TF_VAR_arm_vm_size": config["arm_vm_size"],
         "TF_VAR_ssh_public_key_path": "../../../temp/id_rsa.pub",
     }
+
+    for key, value in env_vars.items():
+        logger.debug(f"Setting environment variable {key} = {value}")
+
     os.environ.update(env_vars)
+    logger.info("Terraform environment variables have been set up.")
