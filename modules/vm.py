@@ -3,6 +3,7 @@ import os
 import random
 import secrets
 import shutil
+import signal
 import string
 from logging import Logger
 from typing import Optional
@@ -13,6 +14,10 @@ from modules import cli
 
 from . import ansible, custom_logging, jenkins, metrics, ssh, terraform
 from .custom_logging import log
+
+
+def handler(logger: Logger):
+    raise KeyboardInterrupt("Interrupt signal received. Exiting...")
 
 
 @log
@@ -32,12 +37,16 @@ def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, log_dir: str, l
         OS name, status, and metrics.
     """
     try:
+        # reset the interrupt signal
+        signal.signal(signal.SIGINT, lambda signum, frame: handler(logger=logger))
         # due to racing condition the main thread can not have the time to cancel all the futures
         if interrupt.value:
-            return os_name, "cancelled"
+            return os_name, "cancelled", None
 
         os.mkdir(log_dir)
-        logger = custom_logging.setup_logger(f"{log_dir}/main.log", cfg["log_level"], "main")
+        logger = custom_logging.setup_logger(
+            f"{log_dir}/main.log", cfg["log_level"], "main"
+        )
 
         env = os.environ.copy()
         logger.debug("Environment variables copied.")
@@ -51,9 +60,25 @@ def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, log_dir: str, l
             password = generate_azure_password(logger=logger)
             env["TF_VAR_password"] = password
             logger.debug("Password generated for Windows VM.")
-            metrics = deploy_vm_and_run_tests(f"{terraform_dir}/windows", os_name, cfg, env, log_dir, logger=logger, password=password, windows=True)
+            metrics = deploy_vm_and_run_tests(
+                f"{terraform_dir}/windows",
+                os_name,
+                cfg,
+                env,
+                log_dir,
+                logger=logger,
+                password=password,
+                windows=True,
+            )
         else:
-            metrics = deploy_vm_and_run_tests(f"{terraform_dir}/linux", os_name, cfg, env=env, log_dir=log_dir, logger=logger)
+            metrics = deploy_vm_and_run_tests(
+                f"{terraform_dir}/linux",
+                os_name,
+                cfg,
+                env=env,
+                log_dir=log_dir,
+                logger=logger,
+            )
             logger.debug("Linux VM deployment initiated.")
 
         logger.info(f"Deployment and test for {os_name} succeeded.")
@@ -65,7 +90,14 @@ def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, log_dir: str, l
 
 @log
 def deploy_vm_and_run_tests(
-    terraform_dir: str, os_name: str, cfg: dict, env: dict, log_dir: str, logger: Logger, password: str | None = None, windows: bool = False
+    terraform_dir: str,
+    os_name: str,
+    cfg: dict,
+    env: dict,
+    log_dir: str,
+    logger: Logger,
+    password: str | None = None,
+    windows: bool = False,
 ) -> tuple[list, list]:
     """
     Deploy a VM and run tests on it.
@@ -86,10 +118,18 @@ def deploy_vm_and_run_tests(
     client = None
     metrics_collector = None
 
-    terraform_logger = custom_logging.setup_logger(f"{log_dir}/terraform.log", cfg["log_level"], "terraform")
-    ansible_logger = custom_logging.setup_logger(f"{log_dir}/ansible.log", cfg["log_level"], "ansible")
-    jenkins_logger = custom_logging.setup_logger(f"{log_dir}/jenkins.log", cfg["log_level"], "jenkins")
-    metrics_logger = custom_logging.setup_logger(f"{log_dir}/metrics.log", cfg["log_level"], "metrics")
+    terraform_logger = custom_logging.setup_logger(
+        f"{log_dir}/terraform.log", cfg["log_level"], "terraform"
+    )
+    ansible_logger = custom_logging.setup_logger(
+        f"{log_dir}/ansible.log", cfg["log_level"], "ansible"
+    )
+    jenkins_logger = custom_logging.setup_logger(
+        f"{log_dir}/jenkins.log", cfg["log_level"], "jenkins"
+    )
+    metrics_logger = custom_logging.setup_logger(
+        f"{log_dir}/metrics.log", cfg["log_level"], "metrics"
+    )
 
     try:
         logger.info(f"Deploying {os_name} VM")
@@ -109,7 +149,9 @@ def deploy_vm_and_run_tests(
         # for windows this only serves to wait for ssh to be available
         client = ssh.connect_to_vm(ip, logger=logger, password=password)
         logger.debug("SSH connection established.")
-        ansible.download_remote_dependency(os_name, logger=ansible_logger, password=password, windows=windows, ip=ip)
+        ansible.download_remote_dependency(
+            os_name, logger=ansible_logger, password=password, windows=windows, ip=ip
+        )
         logger.debug("Remote dependencies downloaded.")
 
         if windows:
@@ -119,10 +161,19 @@ def deploy_vm_and_run_tests(
             logger.debug("SSH connection re-established with PowerShell.")
 
         logger.info("Copying project files...")
-        copy_project_files(client, ip, cfg["project_root"], logger=logger, password=password, windows=windows)
+        copy_project_files(
+            client,
+            ip,
+            cfg["project_root"],
+            logger=logger,
+            password=password,
+            windows=windows,
+        )
         logger.debug("Project files copied.")
 
-        metrics_collector = metrics.MetricsCollector(client, logger=metrics_logger, windows=windows)
+        metrics_collector = metrics.MetricsCollector(
+            client, logger=metrics_logger, windows=windows
+        )
         metrics_collector.start(logger=logger)
         logger.debug("Metrics collection started.")
 
@@ -154,7 +205,12 @@ def deploy_vm_and_run_tests(
 
 @log
 def copy_project_files(
-    client: paramiko.SSHClient, ip: str, project_root: str, logger: Logger, password: str | None = None, windows: bool = False
+    client: paramiko.SSHClient,
+    ip: str,
+    project_root: str,
+    logger: Logger,
+    password: str | None = None,
+    windows: bool = False,
 ) -> None:
     """
     Copy project files to the VM.
@@ -188,12 +244,26 @@ def copy_project_files(
         logger.debug("Project files copied to VM.")
     elif not windows:
         # copy the project files to the VM
-        cli.run(f"scp -o StrictHostKeyChecking=no -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project", logger=logger, shell=True, check=True)
-        ssh.execute_ssh_command(client, "sudo cp -r ~/project/* /var/lib/jenkins/workspace/aic_job", logger=logger)
-        # regive jenkins ownership of the workspace
-        ssh.execute_ssh_command(client, "sudo chown -R jenkins:jenkins /var/lib/jenkins", logger=logger)
         cli.run(
-            f"scp -o StrictHostKeyChecking=no -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~", logger=logger, shell=True, check=True
+            f"scp -o StrictHostKeyChecking=no -i ./temp/id_rsa -r {project_root} aic@{ip}:~/project",
+            logger=logger,
+            shell=True,
+            check=True,
+        )
+        ssh.execute_ssh_command(
+            client,
+            "sudo cp -r ~/project/* /var/lib/jenkins/workspace/aic_job",
+            logger=logger,
+        )
+        # regive jenkins ownership of the workspace
+        ssh.execute_ssh_command(
+            client, "sudo chown -R jenkins:jenkins /var/lib/jenkins", logger=logger
+        )
+        cli.run(
+            f"scp -o StrictHostKeyChecking=no -i ./temp/id_rsa ./modules/approve-scripts.groovy aic@{ip}:~",
+            logger=logger,
+            shell=True,
+            check=True,
         )
         logger.debug("Project files copied to VM.")
     else:
@@ -223,7 +293,13 @@ def generate_azure_password(logger: Logger) -> str:
     while True:
         password = secrets.token_urlsafe(32)
         # check if it fulfills the azure password requirements (made with help of copilot)
-        if any(c.islower() for c in password) and any(c.isupper() for c in password) and any(c.isdigit() for c in password):
+        if (
+            any(c.islower() for c in password)
+            and any(c.isupper() for c in password)
+            and any(c.isdigit() for c in password)
+        ):
             return password
         else:
-            logger.warning("Password does not meet Azure requirements, generating a new one...")
+            logger.warning(
+                "Password does not meet Azure requirements, generating a new one..."
+            )

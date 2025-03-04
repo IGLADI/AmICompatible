@@ -8,7 +8,7 @@ appId: <appId>
 client_secret: <client_secret>
 # From service principal output
 tenant_id: <tenant_id>
-# max simultaneous test to run
+# max simultaneous test to run (emply for no limit)
 max_threads: 3
 # list of OS to test on (uncomment the ones you want to test)
 os:

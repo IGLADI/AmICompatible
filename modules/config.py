@@ -45,10 +45,15 @@ def load_config(path: str = "aic.yml") -> dict:
         if key not in config_dict:
             raise ValueError(f"Missing required configuration key: {key}")
 
-    if not isinstance(config_dict["max_threads"], int) and config_dict["max_threads"] is not None:
+    if (
+        not isinstance(config_dict["max_threads"], int)
+        and config_dict["max_threads"] is not None
+    ):
         raise ValueError("max_threads must be an integer or None.")
 
-    if not isinstance(config_dict["os"], list) or not all(isinstance(item, str) for item in config_dict["os"]):
+    if not isinstance(config_dict["os"], list) or not all(
+        isinstance(item, str) for item in config_dict["os"]
+    ):
         raise ValueError("os must be a list of strings.")
 
     if not isinstance(config_dict["subscription_id"], str):
@@ -72,13 +77,19 @@ def load_config(path: str = "aic.yml") -> dict:
 
     supported_platforms = ["azure"]
     if config_dict["platform"] not in supported_platforms:
-        raise ValueError(f"Unsupported platform: {config_dict['platform']}. Supported platforms are: {', '.join(supported_platforms)}.")
+        raise ValueError(
+            f"Unsupported platform: {config_dict['platform']}. Supported platforms are: {', '.join(supported_platforms)}."
+        )
 
     if not os.path.exists(config_dict["project_root"]):
         raise ValueError("project_root must be a valid path.")
-    if not os.path.exists(os.path.join(config_dict["project_root"], config_dict["jenkins_file"])):
+    if not os.path.exists(
+        os.path.join(config_dict["project_root"], config_dict["jenkins_file"])
+    ):
         raise ValueError("jenkins_file must be a valid path in the project root.")
-    if not os.path.exists(os.path.join(config_dict["project_root"], config_dict["plugin_file"])):
+    if not os.path.exists(
+        os.path.join(config_dict["project_root"], config_dict["plugin_file"])
+    ):
         raise ValueError("plugin_file must be a valid path in the project root.")
 
     os_list = [
@@ -110,7 +121,9 @@ def load_config(path: str = "aic.yml") -> dict:
 
     log_levels = ["debug", "info", "warning", "error", "critical"]
     if config_dict["log_level"].lower() not in log_levels:
-        raise ValueError(f"Invalid log_level: {config_dict['log_level']}. Supported log levels are: {', '.join(log_levels)}")
+        raise ValueError(
+            f"Invalid log_level: {config_dict['log_level']}. Supported log levels are: {', '.join(log_levels)}"
+        )
 
     return config_dict
 

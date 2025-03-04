@@ -7,7 +7,7 @@ from logging import Logger
 from .custom_logging import log
 
 
-# w help of chatgpt for signal module
+# w help of chatgpt for signal, subprocess, threading
 @log
 def run(
     *args,
@@ -15,11 +15,10 @@ def run(
     ignore_interrupts: bool = False,
     ignore_all_interrupts: bool = False,
     env: dict | None = None,
-    shell=True,
     text=True,
     check=True,
     **kwargs,
-) -> subprocess.CompletedProcess:
+) -> tuple:
     """
     Run a command in a subprocess, with options to handle keyboard interrupts.
 
@@ -29,7 +28,6 @@ def run(
         ignore_interrupts: If True, only the first keyboard interrupt is passed to the subprocess. Defaults to False.
         ignore_all_interrupts: If True, all keyboard interrupts are ignored. Defaults to False.
         env: Environment variables to set for the subprocess. Defaults to None.
-        shell: If True, the command will be executed through the shell. Defaults to True.
         text: If True, the output will be treated as text. Defaults to True.
         check: If True, an exception is raised if the subprocess exits with a non-zero status. Defaults to True.
         **kwargs: Additional keyword arguments passed to subprocess.Popen.
@@ -47,7 +45,7 @@ def run(
         logger.info("Executing a command, only passing the first keyboard interrupt...")
 
     @log
-    def handler(_, __):
+    def handler(logger):
         """
         Handles keyboard interrupts during the execution of a subprocess.
 
@@ -57,7 +55,7 @@ def run(
         """
         if ignore_all_interrupts:
             logger.info("Keyboard interrupts ignored.")
-        else:
+        elif ignore_interrupts:
             # nonlocal is needed to modify the variable in the outer scope but not in the global scope
             nonlocal first_interrupt
             if first_interrupt:
@@ -66,16 +64,20 @@ def run(
                 proc.send_signal(signal.SIGINT)
             else:
                 logger.info("Subsequent Ctrl+C ignored.")
+        else:
+            logger.info("Keyboard interrupt received, terminating subprocess...")
+            proc.terminate()
 
-    if ignore_all_interrupts or ignore_interrupts:
-        first_interrupt = True
-        old_handler = signal.signal(signal.SIGINT, handler)
-        logger.debug("Signal handler set.")
+    first_interrupt = True
+    old_handler = signal.signal(
+        signal.SIGINT, lambda signum, frame: handler(logger=logger)
+    )
+    logger.debug("Signal handler set.")
 
     try:
         proc = subprocess.Popen(
             *args,
-            shell=shell,
+            # shell=shell,
             text=text,
             **kwargs,
             env=env,
@@ -105,9 +107,15 @@ def run(
             pipe.close()
 
         # Create threads to concurrently capture stdout and stderr
-        stdout_thread = threading.Thread(target=log_stream, args=(proc.stdout, logger.level, sys.stdout, stdout_lines), kwargs={"logger": logger})
+        stdout_thread = threading.Thread(
+            target=log_stream,
+            args=(proc.stdout, logger.level, sys.stdout, stdout_lines),
+            kwargs={"logger": logger},
+        )
         stderr_thread = threading.Thread(
-            target=log_stream, args=(proc.stderr, getattr(logger, "ERROR", 40), sys.stderr, stderr_lines), kwargs={"logger": logger}
+            target=log_stream,
+            args=(proc.stderr, getattr(logger, "ERROR", 40), sys.stderr, stderr_lines),
+            kwargs={"logger": logger},
         )
         stdout_thread.start()
         stderr_thread.start()
@@ -123,7 +131,9 @@ def run(
 
         # Raise exception if the process did not exit successfully
         if check and proc.returncode != 0:
-            if proc.returncode == 130:  # 130 typically indicates termination due to SIGINT
+            if (
+                proc.returncode == 130
+            ):  # 130 typically indicates termination due to SIGINT
                 raise KeyboardInterrupt("Command interrupted.")
             else:
                 raise subprocess.CalledProcessError(

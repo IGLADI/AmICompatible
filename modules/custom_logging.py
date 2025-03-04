@@ -25,7 +25,12 @@ def log(func):
     return wrapper
 
 
-def setup_logger(log_file: str, log_level: str, logger_name: str | None = None, secondary_log_file: str | None = None) -> logging.Logger:
+def setup_logger(
+    log_file: str,
+    log_level: str,
+    logger_name: str | None = None,
+    secondary_log_file: str | None = None,
+) -> logging.Logger:
     """
     Set up a logger with specified file and log level.
 

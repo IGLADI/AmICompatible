@@ -10,7 +10,9 @@ from .custom_logging import log
 
 
 @log
-def display_and_save_metrics(results: dict, metrics_results: dict, log_dir: str, logger: Logger) -> None:
+def display_and_save_metrics(
+    results: dict, metrics_results: dict, log_dir: str, logger: Logger
+) -> None:
     """
     Display metrics results in simple line graph.
 
@@ -43,7 +45,13 @@ def display_and_save_metrics(results: dict, metrics_results: dict, log_dir: str,
 # we use a class just to easily stop the thread, this could be a different file too but it makes more sense create a module per scope/feature in this case
 class MetricsCollector:
     @log
-    def __init__(self, client: paramiko.SSHClient, logger: Logger, interval: int = 1, windows: bool = False) -> None:
+    def __init__(
+        self,
+        client: paramiko.SSHClient,
+        logger: Logger,
+        interval: int = 1,
+        windows: bool = False,
+    ) -> None:
         """
         Initialize the MetricsCollector.
 
@@ -71,7 +79,9 @@ class MetricsCollector:
             logger: Logger instance for logging.
         """
         self._stop_flag = False
-        self._thread = threading.Thread(target=self._collect_metrics, kwargs={'logger': logger})
+        self._thread = threading.Thread(
+            target=self._collect_metrics, kwargs={"logger": logger}
+        )
         self._thread.start()
         self.logger.debug("Metrics collection thread started.")
 

@@ -20,13 +20,11 @@ def handler(interrupt: multiprocessing.Value, results: dict, cfg: dict, logger: 
         cfg: Configuration dictionary.
         logger: Logger instance for logging.
     """
-    logger.warning("Interrupt signal received. Setting interrupt flag.")
-    interrupt.value = True
-
-    for os_name in cfg["os"]:
-        if os_name not in results:
-            results[os_name] = "cancelled"
-            logger.info(f"Marking {os_name} as cancelled due to interrupt.")
+    if not interrupt.value:
+        logger.warning("Interrupt signal received. Setting interrupt flag.")
+        interrupt.value = True
+    else:
+        return
 
 
 def main() -> None:
@@ -35,7 +33,9 @@ def main() -> None:
         print("Configuration loaded.")
 
         log_dir = custom_logging.create_log_folder(cfg["log_dir"])
-        logger = custom_logging.setup_logger(f"{log_dir}/main.log", cfg["log_level"], "main")
+        logger = custom_logging.setup_logger(
+            f"{log_dir}/main.log", cfg["log_level"], "main"
+        )
 
         logger.debug(f"Configuration: {cfg}")
 
@@ -53,12 +53,21 @@ def main() -> None:
         match cfg["platform"]:
             case "azure":
                 terraform_dir = "./terraform/azure"
-                logger.debug("Platform set to Azure. Using terraform directory: ./terraform/azure")
+                logger.debug(
+                    "Platform set to Azure. Using terraform directory: ./terraform/azure"
+                )
             case _:
-                logger.error(f"Error: Unsupported platform '{cfg['platform']}' specified.")
+                logger.error(
+                    f"Error: Unsupported platform '{cfg['platform']}' specified."
+                )
                 sys.exit(1)
 
         results = {}
+        # set them as cancelled until they are done
+        for os_name in cfg["os"]:
+            if os_name not in results:
+                results[os_name] = "cancelled"
+                logger.info(f"Marking {os_name} as cancelled due to interrupt.")
         metrics_results = {}
 
         # multithreading done with help of copilot
@@ -66,7 +75,10 @@ def main() -> None:
         with multiprocessing.Manager() as manager:
             interrupt = manager.Value("b", False)
             # ignore interupts in the main thread
-            signal.signal(signal.SIGINT, lambda signum, frame: handler(interrupt, results, cfg, logger=logger))
+            signal.signal(
+                signal.SIGINT,
+                lambda signum, frame: handler(interrupt, results, cfg, logger=logger),
+            )
             # separate processes else the keyboard interrupt will not be passed to the threads
             logger.debug("Starting ProcessPoolExecutor.")
             with concurrent.futures.ProcessPoolExecutor(cfg["max_threads"]) as executor:
@@ -91,10 +103,14 @@ def main() -> None:
                         results[os_name] = result
                         metrics_results[os_name] = metrics_result
                     else:
-                        logger.warning("Skipping result processing due to interrupt flag.")
+                        logger.warning(
+                            "Skipping result processing due to interrupt flag."
+                        )
 
         logger.info("Metrics:")
-        metrics.display_and_save_metrics(results, metrics_results, log_dir, logger=logger)
+        metrics.display_and_save_metrics(
+            results, metrics_results, log_dir, logger=logger
+        )
 
         logger.info("Test Results:")
         for os_name, result in results.items():
@@ -110,7 +126,9 @@ def main() -> None:
             logger.info("All deployments succeeded. Exiting with status 0.")
             sys.exit(0)
         else:
-            logger.error("One or more deployments failed or were cancelled. Exiting with status 1.")
+            logger.error(
+                "One or more deployments failed or were cancelled. Exiting with status 1."
+            )
             sys.exit(1)
     finally:
         logger.info("Cleaning up resources.")

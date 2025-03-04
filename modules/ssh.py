@@ -22,13 +22,23 @@ def create_ssh_key(logger: Logger) -> None:
         os.remove("temp/id_rsa")
         os.remove("temp/id_rsa.pub")
         logger.debug("Existing SSH keys removed.")
-    cli.run("ssh-keygen -t rsa -b 4096 -f ./temp/id_rsa -N '' -q", logger=logger, shell=True, check=True)
+    cli.run(
+        "ssh-keygen -t rsa -b 4096 -f ./temp/id_rsa -N '' -q",
+        logger=logger,
+        shell=True,
+        check=True,
+    )
     logger.debug("New SSH key generated.")
 
 
 @log
 def connect_to_vm(
-    ip: str, logger: Logger, max_retries: int = 10, delay: int = 10, password: str | None = None, key_path: str = "./temp/id_rsa"
+    ip: str,
+    logger: Logger,
+    max_retries: int = 10,
+    delay: int = 10,
+    password: str | None = None,
+    key_path: str = "./temp/id_rsa",
 ) -> paramiko.SSHClient | None:
     """
     Connect to a VM via SSH.
@@ -56,19 +66,27 @@ def connect_to_vm(
             if password:
                 ssh.connect(hostname=ip, username="aic", password=password, timeout=10)
             else:
-                ssh.connect(hostname=ip, username="aic", key_filename=key_path, timeout=10)
+                ssh.connect(
+                    hostname=ip, username="aic", key_filename=key_path, timeout=10
+                )
             logger.debug(f"SSH connection established to {ip} on attempt {attempt}.")
             return ssh
         except Exception as e:
             if attempt >= max_retries:
-                raise Exception(f"Failed to connect after {max_retries} attempts: {str(e)}")
+                raise Exception(
+                    f"Failed to connect after {max_retries} attempts: {str(e)}"
+                )
             else:
-                logger.warning(f"Connection attempt {attempt} failed, waiting {delay} seconds...")
+                logger.warning(
+                    f"Connection attempt {attempt} failed, waiting {delay} seconds..."
+                )
                 time.sleep(delay)
 
 
 @log
-def execute_ssh_command(client: paramiko.SSHClient, command: str, logger: Logger, print_output: bool = True) -> tuple:
+def execute_ssh_command(
+    client: paramiko.SSHClient, command: str, logger: Logger, print_output: bool = True
+) -> tuple:
     """
     Execute an SSH command on the VM.
 
@@ -101,7 +119,9 @@ def execute_ssh_command(client: paramiko.SSHClient, command: str, logger: Logger
             logger.debug(f"STDERR: {stderr_str}")
 
     if exit_status != 0:
-        raise Exception(f"Command '{command}' failed with exit status {exit_status}: {stderr_str}")
+        raise Exception(
+            f"Command '{command}' failed with exit status {exit_status}: {stderr_str}"
+        )
 
     logger.debug(f"Command '{command}' executed successfully.")
     return stdout_str, stderr_str

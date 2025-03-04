@@ -11,7 +11,12 @@ from .custom_logging import log
 
 @log
 def run_jenkins_pipeline(
-    client: paramiko.SSHClient, jenkins_file: str, plugin_file: str, project_root: str, logger: Logger, windows: bool = False
+    client: paramiko.SSHClient,
+    jenkins_file: str,
+    plugin_file: str,
+    project_root: str,
+    logger: Logger,
+    windows: bool = False,
 ) -> None:
     """
     Run the Jenkins pipeline.
@@ -35,7 +40,12 @@ def run_jenkins_pipeline(
             print_output=False,
         )
     else:
-        stdout, stderr = ssh.execute_ssh_command(client, "sudo cat /var/lib/jenkins/secrets/initialAdminPassword", logger=logger, print_output=False)
+        stdout, stderr = ssh.execute_ssh_command(
+            client,
+            "sudo cat /var/lib/jenkins/secrets/initialAdminPassword",
+            logger=logger,
+            print_output=False,
+        )
 
     jenkins_password = stdout.strip()
     logger.debug("Jenkins initial admin password obtained.")
@@ -71,10 +81,16 @@ def run_jenkins_pipeline(
     # Escape the job config for the shell
     if windows:
         # pwsh escape done w help of chatGPT
-        ssh.execute_ssh_command(client, f"@'\n{job_config}\n'@ | Out-File -Encoding UTF8 job_config.xml", logger=logger)
+        ssh.execute_ssh_command(
+            client,
+            f"@'\n{job_config}\n'@ | Out-File -Encoding UTF8 job_config.xml",
+            logger=logger,
+        )
     else:
         job_config = shlex.quote(job_config)
-        ssh.execute_ssh_command(client, f"echo {job_config} > job_config.xml", logger=logger)
+        ssh.execute_ssh_command(
+            client, f"echo {job_config} > job_config.xml", logger=logger
+        )
     logger.debug("Jenkins job configuration created.")
 
     # Create and trigger the job
@@ -119,12 +135,19 @@ def run_jenkins_pipeline(
         )
         logger.debug("Jenkins job triggered.")
     except Exception as e:
-        raise RuntimeError("Jenkins pipeline failed. This is not an AIC error. Check jenkins.log for more information.") from e
+        raise RuntimeError(
+            "Jenkins pipeline failed. This is not an AIC error. Check jenkins.log for more information."
+        ) from e
 
 
 @log
 def install_jenkins_plugins(
-    client: paramiko.SSHClient, jenkins_password: str, plugin_file: str, project_root: str, windows: bool, logger: Logger
+    client: paramiko.SSHClient,
+    jenkins_password: str,
+    plugin_file: str,
+    project_root: str,
+    windows: bool,
+    logger: Logger,
 ) -> None:
     """
     Install the required Jenkins plugins.
@@ -152,9 +175,13 @@ def install_jenkins_plugins(
             logger.debug("Jenkins plugins installed.")
             # Restart Jenkins to apply plugin changes
             if windows:
-                ssh.execute_ssh_command(client, "Restart-Service Jenkins", logger=logger)
+                ssh.execute_ssh_command(
+                    client, "Restart-Service Jenkins", logger=logger
+                )
             else:
-                ssh.execute_ssh_command(client, "sudo systemctl restart jenkins", logger=logger)
+                ssh.execute_ssh_command(
+                    client, "sudo systemctl restart jenkins", logger=logger
+                )
             wait_jenkins(client, logger=logger)
             logger.debug("Jenkins restarted to apply plugin changes.")
     else:
@@ -162,7 +189,12 @@ def install_jenkins_plugins(
 
 
 @log
-def wait_jenkins(client: paramiko.SSHClient, logger: Logger, wait_time: int = 10, max_retries: int = 5) -> None:
+def wait_jenkins(
+    client: paramiko.SSHClient,
+    logger: Logger,
+    wait_time: int = 10,
+    max_retries: int = 5,
+) -> None:
     """
     Wait for Jenkins to come back up.
 
@@ -178,7 +210,12 @@ def wait_jenkins(client: paramiko.SSHClient, logger: Logger, wait_time: int = 10
     logger.info("Waiting for Jenkins to come back up...")
     for _ in range(1, max_retries + 1):
         try:
-            ssh.execute_ssh_command(client, "java -jar jenkins-cli.jar -s http://localhost:8080 who-am-i", logger=logger, print_output=False)
+            ssh.execute_ssh_command(
+                client,
+                "java -jar jenkins-cli.jar -s http://localhost:8080 who-am-i",
+                logger=logger,
+                print_output=False,
+            )
             logger.debug("Jenkins is back up.")
             return
         except Exception:
