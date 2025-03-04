@@ -119,16 +119,16 @@ def deploy_vm_and_run_tests(
     metrics_collector = None
 
     terraform_logger = custom_logging.setup_logger(
-        f"{log_dir}/terraform.log", cfg["log_level"], "terraform"
+        f"{log_dir}/terraform.log", cfg["log_level"], "terraform", f"{log_dir}/main.log"
     )
     ansible_logger = custom_logging.setup_logger(
-        f"{log_dir}/ansible.log", cfg["log_level"], "ansible"
+        f"{log_dir}/ansible.log", cfg["log_level"], "ansible", f"{log_dir}/main.log"
     )
     jenkins_logger = custom_logging.setup_logger(
-        f"{log_dir}/jenkins.log", cfg["log_level"], "jenkins"
+        f"{log_dir}/jenkins.log", cfg["log_level"], "jenkins", f"{log_dir}/main.log"
     )
     metrics_logger = custom_logging.setup_logger(
-        f"{log_dir}/metrics.log", cfg["log_level"], "metrics"
+        f"{log_dir}/metrics.log", cfg["log_level"], "metrics", f"{log_dir}/main.log"
     )
 
     try:
