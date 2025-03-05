@@ -44,9 +44,9 @@ def create_ansible_inventory(
 def download_remote_dependency(
     os_name: str,
     logger: Logger,
+    ip: str,
     password: str | None = None,
     windows: bool = False,
-    ip: str | None = None,
 ) -> None:
     """
     Download remote dependencies using Ansible.

@@ -39,7 +39,7 @@ def connect_to_vm(
     delay: int = 10,
     password: str | None = None,
     key_path: str = "./temp/id_rsa",
-) -> paramiko.SSHClient | None:
+) -> paramiko.SSHClient:
     """
     Connect to a VM via SSH.
 

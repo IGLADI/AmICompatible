@@ -6,7 +6,6 @@ import shutil
 import signal
 import string
 from logging import Logger
-from typing import Optional
 
 import paramiko
 
@@ -21,7 +20,7 @@ def handler(logger: Logger):
 
 
 @log
-def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, log_dir: str, logger: Logger, interrupt: Optional[multiprocessing.Value] = None) -> tuple:  # type: ignore
+def deploy_and_test(os_name: str, cfg: dict, terraform_dir: str, log_dir: str, logger: Logger, interrupt: multiprocessing.Value) -> tuple:  # type: ignore
     """
     Deploy a VM and run tests on it.
 
