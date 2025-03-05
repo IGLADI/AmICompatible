@@ -53,5 +53,7 @@ jenkins_file: ./Jenkinsfile
 # curl -sSL "http://$JENKINS_HOST/pluginManager/api/xml?depth=1&xpath=/*/*/shortName&wrapper=plugins" | perl -pe 's/.*?<shortName>([\w-]+).*?(<\/\w+>)+/\1\n/g'
 # if you do not have a Jenkins server, the plugins.txt file in the example folder should work for you
 plugin_file: ./plugins.txt
+# path to the log folder
+log_dir: ~/.aic_logs
 # what log level to see printed in real time (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 log_level: INFO
