@@ -73,11 +73,13 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
     python main.py
     ```
 
-## Limitation
+## Limitations
 
 AIC will install dependencies which might not come with the system. If your code uses these dependencies, it might work on AIC but not on a clean system. For example, Java will be installed by AIC but not present on a clean system.
 
 AIC handles interruptions as much as possible; however, Terraform can be very sensitive to them, so interruptions are still seriously discouraged and you should always check for any cloud resources left when doing so to avoid any unnecessary costs.
+
+> **Note**: If using GitHub Actions, please note that the system forcibly terminates processes after a timeout when canceled, which may not allow enough time for Azure resources to be properly cleaned up. Cancellation is generally unnecessary in CI/CD environments since multiple runs can execute concurrently (each using separate environments with their own `.tfstate` files). Our current implementation only handles the `SIGINT` signal, if your CI/CD system uses a different signal, please inform us so we can add support for it.
 
 ## How to Add Providers
 
