@@ -116,6 +116,8 @@ To add support for additional cloud providers or on-premises infrastructure, fol
             sys.exit(1)
     ```
 
+    **Note**: You could also just change this code to use the provider name as directory name. Don't forget to try catch the `FileNotFoundError` exception.
+
     You may also need to update `config.py` to include any provider-specific variables.
 
     ```bash
