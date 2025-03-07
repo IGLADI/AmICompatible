@@ -25,7 +25,7 @@ AmICompatible (AIC) is a tool designed to help you test the compatibility of you
 -   [Azure Subscription](https://azure.microsoft.com/en-us/pricing/purchase-options/azure-account?icid=azurefreeaccount)
 -   [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
 -   [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
--   Linux Host: We use Linux only tools like `ansible`, If you are on Windows, you can use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or a Linux VM.
+-   **Note**: ⚠️ Because AIC relies on Ansible, a Linux environment is required. If on Windows, please use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or a Linux VM.
 
 ## Quick Start
 

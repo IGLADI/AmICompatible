@@ -5,7 +5,7 @@ import signal
 import sys
 from logging import Logger
 
-from modules import config, custom_logging, metrics, ssh, vm
+from modules import cli, config, custom_logging, metrics, ssh, vm
 from modules.custom_logging import log
 
 
@@ -29,6 +29,8 @@ def handler(interrupt: multiprocessing.Value, results: dict, cfg: dict, logger: 
 
 def main() -> None:
     try:
+        cli.check_dependencies()
+
         cfg = config.load_config()
         print("Configuration loaded.")
 

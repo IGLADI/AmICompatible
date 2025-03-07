@@ -1,3 +1,4 @@
+import shutil
 import signal
 import subprocess
 import sys
@@ -148,3 +149,11 @@ def run(
         if ignore_all_interrupts or ignore_interrupts:
             signal.signal(signal.SIGINT, old_handler)
             logger.info("Command executed, keyboard interrupts restored.")
+
+
+def check_dependencies():
+    # no need to install az cli, this is not needed to run the script only to get the credentials in aic.yml
+    for cmd in ["terraform", "ansible"]:
+        if shutil.which(cmd) is None:
+            print(f"Error: '{cmd}' is not installed or not in PATH.")
+            sys.exit(1)
